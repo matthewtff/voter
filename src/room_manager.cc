@@ -4,19 +4,28 @@
 
 #include "room.hh"
 
+namespace voter {
+
 namespace {
 
 const char kCreateRoomCommand[] = "create_room";
+const char kGetAllRooms[] = "get_all_rooms";
 const char kRoomId[] = "room_id";
 const char kRoomInfo[] = "room_info";
+const char kRoomsList[] = "rooms_list";
 const char kRoomManagerPath[] = "/room-manager";
+
+koohar::JSON::Object CreateRoomInfoObject(const Room& room) {
+  koohar::JSON::Object room_info;
+  room_info[kRoomId] = room.id();
+  return room_info;
+}
 
 }  // anonymous namespace
 
-namespace voter {
-
 RoomManager::RoomManager() : CommandsHandler(this) {
   AddHandler(kCreateRoomCommand, CreateHandler(&RoomManager::OnCreateRoom));
+  AddHandler(kGetAllRooms, CreateHandler(&RoomManager::OnGetAllRooms));
 }
 
 void RoomManager::RemoveRoom(const std::string& room_id) {
@@ -52,16 +61,26 @@ CommandsHandler::Handler RoomManager::CreateHandler(CommandsListener listener) {
 }
 
 void RoomManager::OnCreateRoom(const koohar::Request& /* request */) {
-  LOG << "RoomManager::OnCreateRoom" << std::endl;
   rooms_.emplace_front(this);
   const Room& room = rooms_.front();
 
   // Also send back room id.
   koohar::JSON::Object room_info;
   room_info[CommandsHandler::kCommandName] = kRoomInfo;
-  room_info[kRoomId] = room.id();
-  LOG << room_info.ToString() << std::endl;
+  room_info[CommandsHandler::kData] = CreateRoomInfoObject(room);
   SendMessage(room_info);
+}
+
+void RoomManager::OnGetAllRooms(const koohar::Request& /* request */) {
+  koohar::JSON::Object rooms_list_info;
+  rooms_list_info[CommandsHandler::kCommandName] = kRoomsList;
+
+  koohar::JSON::Object rooms_list;
+  for (const Room& room : rooms_) {
+    rooms_list.AddToArray(CreateRoomInfoObject(room));
+  }
+  rooms_list_info[CommandsHandler::kData] = rooms_list;
+  SendMessage(rooms_list_info);
 }
 
 }  // namespace voter

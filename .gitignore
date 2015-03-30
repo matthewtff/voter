@@ -32,3 +32,6 @@ build/voter
 
 #CMake files
 cmake_build/
+
+# vim swap files
+.*.swp

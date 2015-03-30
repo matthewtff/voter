@@ -7,10 +7,13 @@ subdirs (
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	set (warnings "-Wall -Wextra -Woverloaded-virtual")
-	set (common_flags "-std=c++0x -stdlib=libc++ -fPIC")
-	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${warnings} ${common_flags}")
-	set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${warnings} ${comon_flags} -g -ggdb")
-	set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${warnings} ${common_flags} -O2")
+	set (common_flags "-std=c++0x -fPIC")
+  if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set (clang_flags "-stdlib=libc++")
+  endif (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${warnings} ${common_flags} ${clang_flags}")
+	set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${warnings} ${comon_flags} ${clang_flags} -g -ggdb")
+	set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${warnings} ${common_flags} ${clang_flags} -O2")
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 

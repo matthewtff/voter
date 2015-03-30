@@ -17,13 +17,11 @@ class UrlHandler;
 
 class Router {
  public:
-  Router(/*const koohar::ServerAsio* server*/) /*: server_(server)*/ {}
   void OnRequest(koohar::Request&& request, koohar::Response&& response);
 
  private:
   using HandlersMap = std::map<std::string, UrlHandler>;
 
-  //const koohar::ServerAsio* server_;
   RoomManager room_manager_;
 };  // class Router
 

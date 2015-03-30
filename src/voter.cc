@@ -12,7 +12,9 @@ koohar::ServerAsio* server_ptr = nullptr;
 
 HandlerRet SignalHandler(HandlerGet /* sig */) {
   if (server_ptr) {
+    LOG << "Stopping server... ";
     server_ptr->Stop();
+    LOG << "Done!" << std::endl;
   }
 }
 
@@ -32,7 +34,7 @@ int main (int argc, char* argv[]) {
   server.Load(kConfigPath);
   server_ptr = &server;
 
-  voter::Router router;//{&server};
+  voter::Router router;
   server.Listen(std::bind(&voter::Router::OnRequest,
                           &router,
                           std::placeholders::_1,

@@ -33,6 +33,7 @@ class RoomManager : public CommandsHandler,
   CommandsHandler::Handler CreateHandler(CommandsListener listener);
 
   void OnCreateRoom(const koohar::Request& /* request */);
+  void OnGetAllRooms(const koohar::Request& /* request */);
 
   RoomList rooms_;
 };  // class RoomManager

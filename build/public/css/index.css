@@ -1,0 +1,32 @@
+body {
+  padding: 0px;
+  margin: 0px;
+}
+
+.welcome {
+  float: left;
+  background-color: lightgray;
+  height: 200px;
+  width: 50%;
+}
+
+.create-room {
+  float: left;
+  height: 200px;
+  width: 50%;
+}
+
+.create-room .button {
+  background-color: lightblue;
+  height: 50%;
+  width: 50%;
+  margin-left: 30%;
+  margin-top: 50px;
+  text-align: center;
+  font-size: 37px;
+  float: left;
+}
+
+.create-room .button:hover {
+  background-color: lightgreen;
+}

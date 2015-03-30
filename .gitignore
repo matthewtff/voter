@@ -26,3 +26,9 @@
 *.exe
 *.out
 *.app
+
+# Voter binary
+build/voter
+
+#CMake files
+cmake_build/

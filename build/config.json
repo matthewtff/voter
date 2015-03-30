@@ -1,0 +1,19 @@
+{
+  "public_dir": "./public",
+  "public_urls": [
+    "/css",
+    "/html",
+    "/js"
+  ],
+  "use_ssl": false,
+  "error_pages": [
+    {
+      "code": 400,
+      "path": "/html/400.html"
+    },
+    {
+      "code": 404,
+      "path": "/html/404.html"
+    }
+  ]
+}

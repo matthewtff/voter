@@ -24,16 +24,18 @@ koohar::JSON::Object CreateRoomInfoObject(const Room& room) {
 }  // anonymous namespace
 
 RoomManager::RoomManager() : CommandsHandler(this) {
-  AddHandler(kCreateRoomCommand, CreateHandler(&RoomManager::OnCreateRoom));
-  AddHandler(kGetAllRooms, CreateHandler(&RoomManager::OnGetAllRooms));
+  AddHandler(kCreateRoomCommand,
+             CreateHandler(&RoomManager::OnCreateRoom, this));
+  AddHandler(kGetAllRooms,
+             CreateHandler(&RoomManager::OnGetAllRooms, this));
 }
 
 void RoomManager::RemoveRoom(const std::string& room_id) {
-  RoomList::const_iterator room = std::find_if(rooms_.cbegin(), rooms_.cend(),
+  RoomList::iterator room = std::find_if(rooms_.begin(), rooms_.end(),
       [&room_id](const Room& room) {
         return room.id() == room_id;
       });
-  const bool found_room = room != rooms_.cend();
+  const bool found_room = room != rooms_.end();
   assert(found_room && "We should not try removing room that doesn't exist");
   if (found_room) {
     rooms_.erase(room);
@@ -56,10 +58,6 @@ bool RoomManager::OnRequest(koohar::Request&& request,
 
 // private
 
-CommandsHandler::Handler RoomManager::CreateHandler(CommandsListener listener) {
-  return std::bind(listener, this, std::placeholders::_1);
-}
-
 void RoomManager::OnCreateRoom(const koohar::Request& /* request */) {
   rooms_.emplace_front(this);
   const Room& room = rooms_.front();
@@ -68,6 +66,7 @@ void RoomManager::OnCreateRoom(const koohar::Request& /* request */) {
   koohar::JSON::Object room_info;
   room_info[CommandsHandler::kCommandName] = kRoomInfo;
   room_info[CommandsHandler::kData] = CreateRoomInfoObject(room);
+  std::cout << "Creating room: " << room_info.ToString() << std::endl;
   SendMessage(room_info);
 }
 

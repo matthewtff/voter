@@ -1,0 +1,77 @@
+Voter has a simple architecture:
+
+Client -----> Server <----- Client
+                ^
+                |
+                |
+              Client
+
+
+Server message handling:
+
+Handlers queue:
+
+ 1. Room manager
+ 2. Room
+ 3. User
+
+Handler algo:
+ Call to delegate: OnShouldHandlerRequest()
+ Iff so:
+  1. Extract "command" from request body.
+  2. Find handler for command
+  3. Run handler callback.
+  4. Dispatch array of messages if any.
+
+Room manager commands:
+ dictionary RoomInfo {
+   room_id : string;
+ };
+ - "create_room":
+   input: void
+   output:
+     "command" : "room_info",
+     "data": RoomInfo;
+     [indirect]  // Registered admin user info.
+       "command" : "user_info",
+       "data": UserInfo
+ - "get_all_rooms":
+   input: void
+   output:
+     "command" : "rooms_list",
+     "data": List<RoomInfo>;
+
+Room commands:
+ - "add_user":
+   input: id : string
+   output:
+     "command" : "user_info",
+     "data" : UserInfo;
+     [indirect, broadcast : room]:
+       "command" : "add_user",
+       "data" : UserInfo;
+
+User commands:
+  dictionary UserInfo {
+   user_id: string;
+   user_name: string;
+ };
+ - "chat_message":
+   input: id : string
+   output:
+     void
+     [broadcast : room]:
+       "command" : "chat_message",
+       "user_id" : string,
+       "data" : JSON.Object
+ - "user_leave":
+   input: id : string
+   output:
+     void
+     [broadcast : room]:
+       "command" : "user_leave",
+       "data": UserInfo
+ - "long_poll":  // Used for long polling.
+   input: id : string
+   output:
+     void

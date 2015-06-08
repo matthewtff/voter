@@ -3,7 +3,9 @@
   "public_urls": [
     "/css",
     "/html",
-    "/js"
+    "/fonts",
+    "/js",
+    "/images"
   ],
   "use_ssl": false,
   "error_pages": [

@@ -4,6 +4,7 @@
 #include <functional>
 #include <list>
 #include <map>
+#include <utility>
 
 #include <koohar.hh>
 
@@ -40,6 +41,14 @@ class CommandsHandler {
   virtual bool OnRequest(koohar::Request&& request,
                          koohar::Response&& response);
   void SendMessage(const koohar::JSON::Object& message);
+
+ protected:
+  template <typename Binder, typename Method, typename ... Args>
+  Handler CreateHandler(Method listener,
+                        Binder binder,
+                        Args... args) {
+    return std::bind(listener, binder, std::placeholders::_1, args...);
+  }
 
  private:
   void TryHandleMessage(const koohar::Request& request);

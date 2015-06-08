@@ -29,8 +29,6 @@ class RoomManager : public CommandsHandler,
 
  private:
   using RoomList = std::list<Room>;
-  using CommandsListener = void(RoomManager::*)(const koohar::Request& request);
-  CommandsHandler::Handler CreateHandler(CommandsListener listener);
 
   void OnCreateRoom(const koohar::Request& /* request */);
   void OnGetAllRooms(const koohar::Request& /* request */);

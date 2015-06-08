@@ -1,32 +1,99 @@
+@font-face{
+    font-family: "Roboto-Light";
+    src: url('/fonts/Roboto-Light.ttf');
+}
+
 body {
+  background-color: #f8f8d1;
   padding: 0px;
   margin: 0px;
 }
 
-.welcome {
+.elements {
+  margin-top: 300px;
+  margin-left: 30%; 
+}
+
+.room {
+  width: 300px;
+  height: 20px;
   float: left;
-  background-color: lightgray;
-  height: 200px;
-  width: 50%;
+  margin-right: 77px;
+}
+
+.input {
+  border-image: url('/images/input.png') 31 21 33 26;
+  border-top: 31px;
+  border-right: 21px;
+  border-bottom: 33px;
+  border-left: 26px;
+}
+
+.input-inner {
+  font-size: 24px;
+  font-family: "Roboto-Light";
+  padding-top: 15px;
+  padding-left: 5px;
+  margin-top: -20px;
+  height: 45px;
+  color: #3f4648;
+  opacity: 0.5;
+}
+
+.input-inner:hover {
+  background-color: white;
+}
+
+.input-inner:focus {
+  outline: 0px solid transparent;
+}
+
+.button {
+  height: 50px;
+}
+
+.button-inner {
+  font-size: 30px;
+  font-family: "Roboto-Light";
+  padding-top: 5px;
+  padding-left: 5px;
+  height: 45px;
+  color: #3f4648;
+  text-align: center;
+}
+
+.button-inner:hover {
+  background-color: white;
+  opacity: 0.5;
+}
+
+.button-inner:focus {
+  outline: 0px solid transparent;
+}
+
+.join {
+  width: 200px;
+  float: left;
+}
+
+.join.button {
+  border-image: url('/images/join_button.png') 23 9 15 18;
+  border-top: 23px;
+  border-right: 9px;
+  border-bottom: 15px;
+  border-left: 18px;
 }
 
 .create-room {
-  float: left;
-  height: 200px;
-  width: 50%;
-}
-
-.create-room .button {
-  background-color: lightblue;
-  height: 50%;
-  width: 50%;
-  margin-left: 30%;
-  margin-top: 50px;
-  text-align: center;
-  font-size: 37px;
+  width: 200px;
   float: left;
 }
 
-.create-room .button:hover {
-  background-color: lightgreen;
+.create-room.button {
+  border-image: url('/images/create_button.png') 22 9 15 18;
+  border-left: 18px;
+  border-right: 9px;
+  border-top: 22px;
+  border-bottom: 15px;
+  margin-left: 10px;
 }

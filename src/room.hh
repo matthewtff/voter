@@ -41,10 +41,9 @@ class Room : public CommandsHandler,
   const std::string id() const { return id_; }
 
  private:
-  using CommandsListener = void(Room::*)(const koohar::Request& request);
-  CommandsHandler::Handler CreateHandler(CommandsListener listener);
-
   void OnAddUser(const koohar::Request& /* request */);
+
+  void AddAdminUser();
 
   RoomManager* room_manager_;
   UserList users_;

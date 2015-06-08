@@ -9,10 +9,6 @@
 
 #include "commands_handler.hh"
 
-namespace koohar {
-class Request;
-}
-
 namespace voter {
 
 class Room;
@@ -20,7 +16,12 @@ class Room;
 class User : public CommandsHandler,
              public CommandsHandler::Delegate {
  public:
-  User(Room* room);
+  enum class Role {
+    Admin,
+    Voter
+  };
+  User(Room* room) : User(room, Role::Voter) {}
+  User(Room* room, const Role role);
 
   // CommandsHandler::Delegate implementation.
   bool ShouldHandleRequest(const koohar::Request& request) const override;
@@ -28,17 +29,18 @@ class User : public CommandsHandler,
   std::string name() const { return name_; }
   std::string id() const { return id_; }
 
- private:
-  using CommandsListener = void(User::*)(const koohar::Request& request);
-  CommandsHandler::Handler CreateHandler(CommandsListener listener);
+  koohar::JSON::Object GetUserInfo() const;
 
+ private:
   // Command handlers:
   void OnChatMessage(const koohar::Request& request);
+  void OnLongPoll(const koohar::Request& request);
   void OnUserLeave(const koohar::Request& /* request */);
 
   Room* const room_;
   const std::string name_;
   const std::string id_;
+  Role role_;
 };  // class User
 
 }  // namespace voter

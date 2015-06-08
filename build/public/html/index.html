@@ -2,17 +2,21 @@
 <html>
 <head>
   <title>Welcome to Voter!</title>
+  <script src="/js/utils.js" async></script>
   <script src="/js/index.js" async></script>
   <link rel="stylesheet" href="/css/index.css">
 </head>
 <body>
-  <div class="welcome">
-    <h2>Voter service</h2>
-    <h3>In the sake of agile!</h3>
-  </div>
-  <div class="create-room">
-    <div class="button">
-      <p>Create room</p>
+  <div class="elements">
+    <div class="room input" >
+      <div contenteditable=true class="input-inner">Enter room number</div>
+    </div>
+    <div class="join button" >
+      <div class="button-inner">Join</div>
+    </div>
+    <div style="clear: both"></div>
+    <div class="create-room button">
+      <div class="button-inner">Create room</div>
     </div>
   </div>
 </body>

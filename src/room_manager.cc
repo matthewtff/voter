@@ -3,10 +3,12 @@
 #include <koohar.hh>
 
 #include "room.hh"
+#include "utils.hh"
 
 namespace voter {
-
 namespace {
+
+using RoomIdChecker = MethodChecker<Room, std::string>;
 
 const char kCreateRoomCommand[] = "create_room";
 const char kGetAllRooms[] = "get_all_rooms";
@@ -23,7 +25,9 @@ koohar::JSON::Object CreateRoomInfoObject(const Room& room) {
 
 }  // anonymous namespace
 
-RoomManager::RoomManager() : CommandsHandler(this) {
+RoomManager::RoomManager(IntervalDelegate* interval_delegate)
+    : CommandsHandler(this),
+      interval_delegate_(interval_delegate) {
   AddHandler(kCreateRoomCommand,
              CreateHandler(&RoomManager::OnCreateRoom, this));
   AddHandler(kGetAllRooms,
@@ -31,15 +35,30 @@ RoomManager::RoomManager() : CommandsHandler(this) {
 }
 
 void RoomManager::RemoveRoom(const std::string& room_id) {
-  RoomList::iterator room = std::find_if(rooms_.begin(), rooms_.end(),
-      [&room_id](const Room& room) {
-        return room.id() == room_id;
-      });
-  const bool found_room = room != rooms_.end();
+  RoomList::const_iterator room = std::find_if(rooms_.cbegin(), rooms_.cend(),
+                                               RoomIdChecker(room_id, &Room::id));
+  const bool found_room = room != rooms_.cend();
   assert(found_room && "We should not try removing room that doesn't exist");
   if (found_room) {
     rooms_.erase(room);
+
+    // TODO(matthewtff): Remove this log message.
+    koohar::JSON::Object room_info;
+    room_info[CommandsHandler::kCommandName] = kRoomInfo;
+    room_info[CommandsHandler::kData] = CreateRoomInfoObject(*room);
+    std::cout << "Removing room: " << room_info.ToString() << std::endl;
   }
+}
+
+koohar::ServerAsio::TimeoutHandle RoomManager::SetInterval(
+    std::chrono::milliseconds timeout,
+    std::function<void()> callback) {
+  return interval_delegate_->SetInterval(timeout, callback);
+}
+
+void RoomManager::ClearInterval(
+    koohar::ServerAsio::TimeoutHandle timeout_handle) {
+  interval_delegate_->ClearInterval(timeout_handle);
 }
 
 bool RoomManager::ShouldHandleRequest(const koohar::Request& request) const {
@@ -75,6 +94,7 @@ void RoomManager::OnGetAllRooms(const koohar::Request& /* request */) {
   rooms_list_info[CommandsHandler::kCommandName] = kRoomsList;
 
   koohar::JSON::Object rooms_list;
+  rooms_list.SetType(koohar::JSON::Type::Array);
   for (const Room& room : rooms_) {
     rooms_list.AddToArray(CreateRoomInfoObject(room));
   }

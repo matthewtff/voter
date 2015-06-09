@@ -50,11 +50,17 @@ Room commands:
      [indirect, broadcast : room]:
        "command" : "add_user",
        "data" : UserInfo;
+  - "verify_user":
+    input: id : string
+    output:
+      "command" : "verify_user",
+      "data" : valid : boolean;
 
 User commands:
   dictionary UserInfo {
    user_id: string;
    user_name: string;
+   is_administrator: boolean;
  };
  - "chat_message":
    input: id : string
@@ -71,7 +77,11 @@ User commands:
      [broadcast : room]:
        "command" : "user_leave",
        "data": UserInfo
+     [broadcast : room]:
+       "command" : "admin_selected",
+       "data": UserInfo
  - "long_poll":  // Used for long polling.
    input: id : string
    output:
-     void
+     "command" : "keep_alive",
+     "data" : void

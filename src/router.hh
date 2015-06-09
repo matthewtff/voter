@@ -17,6 +17,7 @@ class UrlHandler;
 
 class Router {
  public:
+  Router(RoomManager::IntervalDelegate* interval_delegate);
   void OnRequest(koohar::Request&& request, koohar::Response&& response);
 
  private:

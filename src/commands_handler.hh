@@ -18,19 +18,17 @@ class CommandsHandler {
   class Delegate {
    public:
     virtual bool ShouldHandleRequest(const koohar::Request& request) const = 0;
-  };  // class Delegate
+  };  // class CommandsHandler::Delegate
+
+  class Observer {
+    virtual void OnConnectionGone() {}
+  };  // class CommandsHandler::Observer
 
   static const char* kCommandName;
   static const char* kData;
 
-  CommandsHandler(const Delegate* delegate) : delegate_(delegate) {}
-  virtual ~CommandsHandler() {
-    if (response_) {
-      response_->WriteHead(200);
-      response_->End();
-    }
-  }
-
+  CommandsHandler(const Delegate* delegate);
+  virtual ~CommandsHandler();
   void AddHandler(const std::string command_name, Handler handler) {
     handlers_map_[command_name] = handler;
   }
@@ -41,6 +39,8 @@ class CommandsHandler {
   virtual bool OnRequest(koohar::Request&& request,
                          koohar::Response&& response);
   void SendMessage(const koohar::JSON::Object& message);
+
+  bool HasActiveConnection() const;
 
  protected:
   template <typename Binder, typename Method, typename ... Args>

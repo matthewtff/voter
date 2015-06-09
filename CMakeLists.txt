@@ -59,7 +59,8 @@ set ( voter_src
   src/router.hh
   src/user.cc
   src/user.hh
-	src/voter.cc
+  src/utils.hh
+  src/voter.cc
 )
 
 add_executable ( voter ${voter_src} )

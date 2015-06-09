@@ -26,6 +26,7 @@ class Room : public CommandsHandler,
   using UserList = std::list<User>;
 
   Room(RoomManager* room_manager);
+  ~Room();
 
   // CommandsHandler::Delegate implementation.
   bool ShouldHandleRequest(const koohar::Request& request) const override;
@@ -38,16 +39,19 @@ class Room : public CommandsHandler,
   void BroadcastMessage(const koohar::JSON::Object& message);
 
   const UserList& users() const { return users_; }
-  const std::string id() const { return id_; }
+  std::string id() const { return id_; }
 
  private:
   void OnAddUser(const koohar::Request& /* request */);
+  void OnVerifyUser(const koohar::Request& request);
 
-  void AddAdminUser();
+  void CheckEmptyness();
+  void SelectNewAdministrator();
 
   RoomManager* room_manager_;
   UserList users_;
   const std::string id_;
+  std::size_t check_emptyness_interval_;
 };  // class Room
 
 }  // namespace voter

@@ -35,9 +35,9 @@ RoomManager::RoomManager(IntervalDelegate* interval_delegate)
 }
 
 void RoomManager::RemoveRoom(const std::string& room_id) {
-  RoomList::const_iterator room = std::find_if(rooms_.cbegin(), rooms_.cend(),
-                                               RoomIdChecker(room_id, &Room::id));
-  const bool found_room = room != rooms_.cend();
+  RoomList::iterator room = std::find_if(rooms_.begin(), rooms_.end(),
+                                         RoomIdChecker(room_id, &Room::id));
+  const bool found_room = room != rooms_.end();
   assert(found_room && "We should not try removing room that doesn't exist");
   if (found_room) {
     rooms_.erase(room);

@@ -85,3 +85,12 @@ User commands:
    output:
      "command" : "keep_alive",
      "data" : void
+ - "set_vote":
+   input:
+     id : string
+     data : string
+   output:
+     void
+     [broadcast : room]:
+       "command" : "set_vote",
+       "data": string

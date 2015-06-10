@@ -10,11 +10,13 @@
 
   function registerUser(room_id) {
     var pretend_long_poll = onMessageReceived.bind(room, true);
-    utils.runHttpRequest('/room?command=add_user&id=' + room_id, pretend_long_poll);
+    utils.runHttpRequest('/room?command=add_user&id=' + room_id,
+                         pretend_long_poll);
   }
 
   function removeUser(user_id) {
-    utils.runHttpRequest('/user?command=remove_user&id=' + user_id, onMessageReceived);
+    utils.runHttpRequest('/user?command=remove_user&id=' + user_id,
+                         onMessageReceived);
   }
 
   function makeLongPoll(user_id) {
@@ -46,7 +48,8 @@
       user_info = response['data'];
       utils.write(user_info.user_name);
       utils.saveUserInfo(user_info);
-      window.addEventListener('beforeunload', removeUser.bind(room, user_info.user_id));
+      window.addEventListener('beforeunload',
+                              removeUser.bind(room, user_info.user_id));
     } else if (response['command'] == 'admin_selected') {
       utils.write('Admin selected: ' + response['data'].user_name);
     }
@@ -56,12 +59,19 @@
     }
   }
 
+  // UI
+
+  function renderRoomInfo(room_info) {
+    var room_id_holder = document.querySelector('.room-id');
+    room_id_holder.innerText = room_info.room_id;
+  }
+
   function main() {
     room_info = utils.getRoomInfo();
     if (!room_info) {
       moveToHomePage();
     }
-    utils.write('Room #' + room_info.room_id);
+    renderRoomInfo(room_info);
     registerUser(room_info.room_id);
   };
 

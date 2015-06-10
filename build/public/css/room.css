@@ -1,31 +1,81 @@
 body {
+  background-color: #f8f8d1;
   padding: 0px;
   margin: 0px;
 }
 
-.chat {
-  background-color: lightgray;
-  height: 200px;
-  width: 50%;
+header {
+  float: initial;
+  margin-top: 2vh;
+  font-size: 20px;
+  color: #387793;
 }
 
-.create-room {
+.main-page {
+  margin-left: 5%;
+  margin-right: 5%;
+}
+
+.room-title {
   float: left;
-  height: 200px;
-  width: 50%;
 }
 
-.create-room .button {
-  background-color: lightblue;
-  height: 50%;
-  width: 50%;
-  margin-left: 30%;
-  margin-top: 50px;
+.room-id {
+  float: left;
+  margin-left: 5px;
+}
+
+.clear-both {
+  clear: both;
+}
+
+.room-url {
+  float: left;
+}
+
+.copy-room-url {
+  float: left;
+  margin-left: 5%;
+}
+
+.button {
+  border: 1px solid black;
+}
+
+header .button {
+  float: right;
+  margin-right: 10px;
+  color: black;
+}
+
+.tab-view {
+  font-size: 25px;
+}
+
+.tab-view .tab {
+  padding-top: 10px;
   text-align: center;
-  font-size: 37px;
   float: left;
 }
 
-.create-room .button:hover {
-  background-color: lightgreen;
+.tab-view .left-holder {
+  width: 5%;
+  border-bottom: 2px solid black;
+}
+
+.tab-view .right-holder {
+  width: 50%;
+  border-bottom: 2px solid black;
+}
+
+.tab-view .background {
+  border: 2px solid black;
+  font-size: 20px;
+  bottom: 0px;
+}
+
+.tab-view .active {
+  border-left: 2px solid black;
+  border-top: 2px solid black;
+  border-right: 2px solid black;
 }

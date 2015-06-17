@@ -42,7 +42,6 @@ class RoomManager : public CommandsHandler,
   bool OnRequest(koohar::Request&& request,
                  koohar::Response&& response) override;
 
-
  private:
   using RoomList = std::list<Room>;
 

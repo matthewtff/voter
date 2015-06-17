@@ -62,12 +62,12 @@ User commands:
    user_name: string;
    is_administrator: boolean;
  };
- - "chat_message":
+ - "user_message":
    input: id : string
    output:
      void
      [broadcast : room]:
-       "command" : "chat_message",
+       "command" : "user_message",
        "user_id" : string,
        "data" : JSON.Object
  - "user_leave":
@@ -85,12 +85,3 @@ User commands:
    output:
      "command" : "keep_alive",
      "data" : void
- - "set_vote":
-   input:
-     id : string
-     data : string
-   output:
-     void
-     [broadcast : room]:
-       "command" : "set_vote",
-       "data": string

@@ -10,7 +10,7 @@ namespace {
 
 const char kAddUserCommand[] = "add_user";
 const char kAdminSelectedMessage[] = "admin_selected";
-const char kChatMessageCommand[] = "chat_message";
+const char kUserMessageCommand[] = "user_message";
 const char kIsAdministrator[] = "is_administrator";
 const char kLongPollCommand[] = "long_poll";
 const char kKeepAliveCommand[] = "keep_alive";
@@ -68,7 +68,7 @@ User::User(Room* room)
       id_(GenerateId()),
       connection_gone_since_(std::chrono::steady_clock::now()),
       last_seen_alive_(std::chrono::steady_clock::now()) {
-  AddHandler(kChatMessageCommand, CreateHandler(&User::OnChatMessage, this));
+  AddHandler(kUserMessageCommand, CreateHandler(&User::OnUserMessage, this));
   AddHandler(kUserLeaveCommand, CreateHandler(&User::OnUserLeave, this));
   AddHandler(kLongPollCommand, CreateHandler(&User::OnLongPoll, this));
 
@@ -128,9 +128,9 @@ koohar::JSON::Object User::GetUserInfo() const {
 
 // private
 
-void User::OnChatMessage(const koohar::Request& request) {
+void User::OnUserMessage(const koohar::Request& request) {
   koohar::JSON::Object send_message;
-  send_message[CommandsHandler::kCommandName] = kChatMessageCommand;
+  send_message[CommandsHandler::kCommandName] = kUserMessageCommand;
   send_message[kUserId] = id_;
   send_message[CommandsHandler::kData] = request.body();
   room_->BroadcastMessage(send_message);

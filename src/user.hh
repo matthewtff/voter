@@ -41,7 +41,7 @@ class User : public CommandsHandler,
 
  private:
   // Command handlers:
-  void OnChatMessage(const koohar::Request& request);
+  void OnUserMessage(const koohar::Request& request);
   void OnLongPoll(const koohar::Request& request);
   void OnUserLeave(const koohar::Request& /* request */);
 

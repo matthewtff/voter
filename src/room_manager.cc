@@ -94,6 +94,8 @@ void RoomManager::OnGetAllRooms(const koohar::Request& /* request */) {
   rooms_list_info[CommandsHandler::kCommandName] = kRoomsList;
 
   koohar::JSON::Object rooms_list;
+  // If there're no rooms available we should set type to Array to make
+  // JSON object serialize to "[]".
   rooms_list.SetType(koohar::JSON::Type::Array);
   for (const Room& room : rooms_) {
     rooms_list.AddToArray(CreateRoomInfoObject(room));

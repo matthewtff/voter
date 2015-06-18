@@ -40,13 +40,13 @@ void RoomManager::RemoveRoom(const std::string& room_id) {
   const bool found_room = room != rooms_.end();
   assert(found_room && "We should not try removing room that doesn't exist");
   if (found_room) {
-    rooms_.erase(room);
-
     // TODO(matthewtff): Remove this log message.
     koohar::JSON::Object room_info;
     room_info[CommandsHandler::kCommandName] = kRoomInfo;
     room_info[CommandsHandler::kData] = CreateRoomInfoObject(*room);
     std::cout << "Removing room: " << room_info.ToString() << std::endl;
+
+    rooms_.erase(room);
   }
 }
 

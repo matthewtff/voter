@@ -43,6 +43,7 @@ class Room : public CommandsHandler,
 
  private:
   void OnAddUser(const koohar::Request& /* request */);
+  void OnUsersList(const koohar::Request& /* request */);
   void OnVerifyUser(const koohar::Request& request);
 
   void CheckEmptyness();

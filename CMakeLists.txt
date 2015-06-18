@@ -76,3 +76,9 @@ set ( voter_src
 
 add_executable ( voter ${voter_src} )
 target_link_libraries ( voter ${voter_libs} )
+
+add_custom_target(voter-frontend
+                  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                  COMMAND tsc --project build/frontend)
+
+add_dependencies(voter voter-frontend)

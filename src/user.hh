@@ -23,6 +23,7 @@ class User : public CommandsHandler,
     Voter
   };
   User(Room* room);
+  ~User();
 
   // CommandsHandler::Delegate implementation.
   bool ShouldHandleRequest(const koohar::Request& request) const override;

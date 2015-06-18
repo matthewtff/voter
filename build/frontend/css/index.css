@@ -97,3 +97,7 @@ body {
   border-bottom: 15px;
   margin-left: 10px;
 }
+
+.disabled {
+  opacity: 0.5;
+}

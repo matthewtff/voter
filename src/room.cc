@@ -16,9 +16,11 @@ namespace {
 using UserIdChecker = MethodChecker<User, std::string>;
 
 const char kAddUserCommand[] = "add_user";
+const char kGetAllUsersCommand[] = "get_all_users";
 const char kRoomPath[] = "/room";
-const char kVerifyUserCommand[] = "verify_user";
 const char kUserInfo[] = "user_info";
+const char kUsersList[] = "users_list";
+const char kVerifyUserCommand[] = "verify_user";
 
 std::string GenerateId() {
   static unsigned long last_id = 0;
@@ -40,6 +42,7 @@ Room::Room(RoomManager* room_manager)
       id_(GenerateId()),
       check_emptyness_interval_(0u) {
   AddHandler(kAddUserCommand, CreateHandler(&Room::OnAddUser, this));
+  AddHandler(kGetAllUsersCommand, CreateHandler(&Room::OnUsersList, this));
   AddHandler(kVerifyUserCommand, CreateHandler(&Room::OnVerifyUser, this));
   check_emptyness_interval_ =
       room_manager_->SetInterval(std::chrono::milliseconds(2000),
@@ -89,6 +92,18 @@ void Room::OnAddUser(const koohar::Request& /* request */) {
   users_.emplace_front(this);
   // Also send back to user his id and name.
   SendMessage(CreateUserInfoMessage(users_.front()));
+}
+
+void Room::OnUsersList(const koohar::Request& /* request */) {
+  koohar::JSON::Object users_list_info;
+  users_list_info[CommandsHandler::kCommandName] = kUsersList;
+  koohar::JSON::Object users_list;
+  users_list.SetType(koohar::JSON::Type::Array);
+  for (const User& user : users_) {
+    users_list.AddToArray(user.GetUserInfo());
+  }
+  users_list_info[CommandsHandler::kData] = users_list;
+  SendMessage(users_list_info);
 }
 
 void Room::OnVerifyUser(const koohar::Request& request) {

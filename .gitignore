@@ -30,8 +30,14 @@
 # Voter binary
 build/voter
 
+# Frontend compiled js files
+build/frontend/js/
+
 #CMake files
 cmake_build/
 
 # vim swap files
 .*.swp
+
+# Mac finder files
+.DS_Store

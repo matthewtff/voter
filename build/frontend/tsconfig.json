@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "noImplicitAny": false,
+        "outDir": "js",
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "sourceMap": true
+    },
+    "files": [
+        "ts/index.ts",
+        "ts/room.ts",
+        "ts/room_page.ts",
+        "ts/user.ts",
+        "ts/utils.ts",
+        "ts/validator.ts"
+    ]
+}

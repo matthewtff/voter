@@ -81,6 +81,13 @@ User::User(Room* room)
   role_ = room_->users().empty() ? Role::Admin : Role::Voter;
 }
 
+User::~User() {
+  koohar::JSON::Object user_leave;
+  user_leave[CommandsHandler::kCommandName] = kUserLeaveCommand;
+  user_leave[CommandsHandler::kData] = GetUserInfo();
+  room_->BroadcastMessage(user_leave);
+}
+
 bool User::ShouldHandleRequest(const koohar::Request& request) const {
   const bool matches = request.Corresponds(kUserPath)
       && request.Body("id") == id_;
@@ -142,10 +149,6 @@ void User::OnLongPoll(const koohar::Request& /* request */) {
 
 void User::OnUserLeave(const koohar::Request& /* request */) {
   room_->RemoveUser(id_);
-  koohar::JSON::Object user_leave;
-  user_leave[CommandsHandler::kCommandName] = kUserLeaveCommand;
-  user_leave[CommandsHandler::kData] = GetUserInfo();
-  room_->BroadcastMessage(user_leave);
 }
 
 }  // namespace voter

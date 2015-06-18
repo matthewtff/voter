@@ -7,7 +7,7 @@ interface MessageHandler {
   Handle(message : Object) : void;
 }
 
-class RoomPage {
+class RoomPage implements Utils.MessageProcessor {
   private static kIndexPagePath = "/html/index.html";
   private users_ : User[];
   private current_user_ : User;
@@ -48,6 +48,16 @@ class RoomPage {
 
     if (is_long_poll) {
       this.MakeLongPoll();
+    }
+  }
+
+  OnMessageAborted(error : string, url : string) {
+    const hash = document.location.hash;
+    // Check if it was typed url with room hash
+    if (hash.length > 0) {
+      Room.MoveToRoom({room_id : hash.slice(3)});
+    } else {
+      // TODO(matthewtff): Show error message...
     }
   }
 
@@ -101,8 +111,7 @@ class RoomPage {
 
   private Leave() {
     Utils.RunHttpRequest(
-        '/user?command=remove_user&id=' + this.current_user_.id(),
-        this.OnMessageReceived.bind(this));
+        '/user?command=remove_user&id=' + this.current_user_.id(), this);
   }
 
   private MakeLongPoll() {
@@ -112,26 +121,27 @@ class RoomPage {
     }
     Utils.RunHttpRequest(
         '/user?command=long_poll&id=' + this.current_user_.id(),
-        this.OnMessageReceived.bind(this),
-        true /* is_long_poll */);
+        this, true /* is_long_poll */);
   }
 
   private GetAllUsers() {
     Utils.RunHttpRequest('/room?command=get_all_users&id=' + this.room_.id(),
-                         this.OnMessageReceived.bind(this));
+                         this);
   }
 
   private RegisterUser() {
     // Actually this is not a long-poll request, but we pretend it is
     // to pass check in |OnMessageReceived| to start actual long-polling.
     Utils.RunHttpRequest('/room?command=add_user&id=' + this.room_.id(),
-                         this.OnMessageReceived.bind(this),
-                         true /* is_long_poll */);
+                         this, true /* is_long_poll */);
   }
 
   private RenderRoomInfo() {
     const room_id_holder = document.querySelector('.room-id');
     room_id_holder.textContent = this.room_.id();
+    const room_link_holder = document.querySelector('.room-url');
+    room_link_holder.textContent =
+        document.location.href + '#id' + this.room_.id();
   }
 
   private RemoveUser(user_value : Object) : User {

@@ -50,6 +50,8 @@ header .button {
 
 .tab-view {
   font-size: 25px;
+  margin-top: 30px;
+  margin-bottom: 20px;
 }
 
 .tab-view .tab {
@@ -63,15 +65,8 @@ header .button {
 }
 
 .tab-view .right-holder {
-  width: 50%;
+  width: 55%;
   border-bottom: 2px solid black;
-}
-
-.tab-view .background {
-  margin-top: 13px;
-  border: 2px solid black;
-  font-size: 20px;
-  bottom: 0px;
 }
 
 .tab-view .holder {
@@ -84,6 +79,15 @@ header .button {
   border-left: 2px solid black;
   border-top: 2px solid black;
   border-right: 2px solid black;
+  width: 25%;
+}
+
+.tab-view .background {
+  margin-top: 14px;
+  border: 2px solid black;
+  font-size: 20px;
+  bottom: 0px;
+  width: 13%;
 }
 
 .tasks-list {
@@ -92,10 +96,13 @@ header .button {
   width: 65%;
 }
 
-.chat {
-  border: 3px solid black;
+.chat-holder {
   float: right;
   width: 20%;
+}
+
+.chat {
+  border: 3px solid black;
 }
 
 .message {
@@ -103,4 +110,10 @@ header .button {
   margin-left: 10px;
   margin-right: 10px;
   font-size: 20px;
+}
+
+.message-input {
+  margin-top: 20px;
+  min-height: 40px;
+  border: solid 3px white;
 }

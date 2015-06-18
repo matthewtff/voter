@@ -7,6 +7,7 @@ interface RoomInfo {
 class Room {
   private static kRoomInfoPath = "room.info";
   private static kRoomIdFieldName = "room_id";
+  private static kRoomPageAddress = "/html/room.html";
   private info_ : RoomInfo;
 
   constructor(room_info : Object) {
@@ -30,9 +31,16 @@ class Room {
       return null;
     return new Room(JSON.parse(saved_room_info));
   }
+
   static Validate (info : Object) : Boolean {
     const has_valid_room_id = info.hasOwnProperty(Room.kRoomIdFieldName)
         && Utils.IsString(info[Room.kRoomIdFieldName]);
     return has_valid_room_id;
+  }
+
+  static MoveToRoom(room_info : RoomInfo) {
+    const room = new Room(room_info);
+    room.Save();
+    document.location.href = Room.kRoomPageAddress;
   }
 }

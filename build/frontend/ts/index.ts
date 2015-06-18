@@ -1,10 +1,9 @@
 /// <reference path="room.ts" />
 /// <reference path="utils.ts" />
 
-class IndexPage {
+class IndexPage implements Utils.MessageProcessor {
   private static kDefaultRoomNumber = "Enter room number";
   private static kDisabledClass = "disabled";
-  private static kRoomPageAddress = "/html/room.html";
   private room_input_ : Element;
 
   constructor() {
@@ -40,42 +39,35 @@ class IndexPage {
   }
 
   private CreateRoom() : void {
-    Utils.RunHttpRequest("/room-manager?command=create_room",
-                         this.OnMessageReceived.bind(this));
+    Utils.RunHttpRequest("/room-manager?command=create_room", this);
   }
 
   private CheckRoomAndJoin() {
-    if (this.room_input_.textContent == IndexPage.kDefaultRoomNumber) {
-      return;
+    if (this.room_input_.textContent != IndexPage.kDefaultRoomNumber) {
+      this.GetRoomList();
     }
-    const room_id = this.room_input_.textContent;
-    IndexPage.GetRoomList(function (response) {
-      if (response[Utils.kCommand] != 'rooms_list') {
-        return;
-      }
-      response['data'].forEach(function (room_info) {
-        if (room_id == room_info.room_id) {
-          IndexPage.MoveToRoom({ room_id: room_id });
-        }
-      });
-    });
   }
 
-  private static GetRoomList(callback) {
-    Utils.RunHttpRequest("/room-manager?command=get_all_rooms", callback);
+  private GetRoomList() {
+    Utils.RunHttpRequest("/room-manager?command=get_all_rooms", this);
   }
 
-  private static MoveToRoom(room_info) {
-    const room = new Room(room_info);
-    room.Save();
-    document.location.href = IndexPage.kRoomPageAddress;
-  }
-
-  private OnMessageReceived(message) {
+  OnMessageReceived(message : Object) {
     if (message[Utils.kCommand] == 'room_info') {
       // We schedule move to room to be able to handle other messages, if any.
-      return setTimeout(IndexPage.MoveToRoom, 0, message[Utils.kData]);
+      return setTimeout(Room.MoveToRoom, 0, message[Utils.kData]);
+    } else if (message[Utils.kCommand] == 'rooms_list') {
+      message[Utils.kData].forEach(function (room_info) {
+        const room_id = this.room_input_.textContent;
+        if (room_id == room_info.room_id) {
+          Room.MoveToRoom({ room_id: room_id });
+        }
+      });
     }
+  }
+
+  OnMessageAborted(error : string, url : string) {
+    // TODO(matthewtff): Show error message depending on url...
   }
 }
 

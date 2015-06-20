@@ -44,18 +44,16 @@ module Utils {
               message_processor.OnMessageReceived(message, data);
             });
           }
+        } else {
+          message_processor.OnMessageAborted(
+              "Error loading resource: " + req.statusText, url);
         }
-      } else {
-        message_processor.OnMessageAborted(
-          "Error loading resource: " + req.statusText, url);
-      }
-    };
+      };
+    }
     req.send();
   }
 
   export function Write(message) {
-    const paragraph = document.createElement('p');
-    paragraph.innerText = message;
-    document.body.appendChild(paragraph);
+    console.log(message);
   }
 }

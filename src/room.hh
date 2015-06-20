@@ -21,7 +21,8 @@ class RoomManager;
 class User;
 
 class Room : public CommandsHandler,
-             public CommandsHandler::Delegate {
+             public CommandsHandler::Delegate,
+             public User::Delegate {
  public:
   using UserList = std::list<User>;
 
@@ -29,14 +30,16 @@ class Room : public CommandsHandler,
   ~Room();
 
   // CommandsHandler::Delegate implementation.
-  bool ShouldHandleRequest(const koohar::Request& request) const override;
+  bool ShouldHandleRequest(const koohar::Request& request) override;
 
   // CommandsHandler implementation.
   bool OnRequest(koohar::Request&& request,
                  koohar::Response&& response) override;
 
-  void RemoveUser(const std::string& user_id);
-  void BroadcastMessage(const koohar::JSON::Object& message);
+  // User::Delegate implementation.
+  bool CheckNameIsUnique(const std::string& name) override;
+  void RemoveUser(const std::string& user_id) override;
+  void BroadcastMessage(const koohar::JSON::Object& message) override;
 
   const UserList& users() const { return users_; }
   std::string id() const { return id_; }

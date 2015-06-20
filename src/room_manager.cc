@@ -61,7 +61,7 @@ void RoomManager::ClearInterval(
   interval_delegate_->ClearInterval(timeout_handle);
 }
 
-bool RoomManager::ShouldHandleRequest(const koohar::Request& request) const {
+bool RoomManager::ShouldHandleRequest(const koohar::Request& request) {
   return request.Corresponds(kRoomManagerPath);
 }
 

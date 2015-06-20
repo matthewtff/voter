@@ -61,13 +61,15 @@ koohar::JSON::Object KeepAliveMessage() {
 
 namespace voter {
 
-User::User(Room* room)
+User::User(Delegate* delegate, const Role role)
     : CommandsHandler(this),
-      room_(room),
-      name_(GenerateName()),
+      delegate_(delegate),
+      name_(SelectName()),
       id_(GenerateId()),
+      role_(role),
       connection_gone_since_(std::chrono::steady_clock::now()),
       last_seen_alive_(std::chrono::steady_clock::now()) {
+  AddObserver(this);
   AddHandler(kUserMessageCommand, CreateHandler(&User::OnUserMessage, this));
   AddHandler(kUserLeaveCommand, CreateHandler(&User::OnUserLeave, this));
   AddHandler(kLongPollCommand, CreateHandler(&User::OnLongPoll, this));
@@ -76,19 +78,17 @@ User::User(Room* room)
   koohar::JSON::Object notify_user;
   notify_user[CommandsHandler::kCommandName] = kAddUserCommand;
   notify_user[CommandsHandler::kData] = GetUserInfo();
-  room_->BroadcastMessage(notify_user);
-
-  role_ = room_->users().empty() ? Role::Admin : Role::Voter;
+  delegate_->BroadcastMessage(notify_user);
 }
 
 User::~User() {
   koohar::JSON::Object user_leave;
   user_leave[CommandsHandler::kCommandName] = kUserLeaveCommand;
   user_leave[CommandsHandler::kData] = GetUserInfo();
-  room_->BroadcastMessage(user_leave);
+  delegate_->BroadcastMessage(user_leave);
 }
 
-bool User::ShouldHandleRequest(const koohar::Request& request) const {
+bool User::ShouldHandleRequest(const koohar::Request& request) {
   const bool matches = request.Corresponds(kUserPath)
       && request.Body("id") == id_;
   if (matches) {
@@ -106,7 +106,7 @@ void User::MakeAdmin() {
   koohar::JSON::Object admin_selected;
   admin_selected[CommandsHandler::kCommandName] = kAdminSelectedMessage;
   admin_selected[CommandsHandler::kData] = GetUserInfo();
-  room_->BroadcastMessage(admin_selected);
+  delegate_->BroadcastMessage(admin_selected);
 }
 
 bool User::CheckIfUnavailable() {
@@ -139,8 +139,8 @@ void User::OnUserMessage(const koohar::Request& request) {
   koohar::JSON::Object send_message;
   send_message[CommandsHandler::kCommandName] = kUserMessageCommand;
   send_message[kUserId] = id_;
-  send_message[CommandsHandler::kData] = request.body();
-  room_->BroadcastMessage(send_message);
+  send_message[CommandsHandler::kData] = request.Body("data");
+  delegate_->BroadcastMessage(send_message);
 }
 
 void User::OnLongPoll(const koohar::Request& /* request */) {
@@ -148,7 +148,15 @@ void User::OnLongPoll(const koohar::Request& /* request */) {
 }
 
 void User::OnUserLeave(const koohar::Request& /* request */) {
-  room_->RemoveUser(id_);
+  delegate_->RemoveUser(id_);
+}
+
+std::string User::SelectName() {
+  std::string name = GenerateName();
+  while (!delegate_->CheckNameIsUnique(name)) {
+    name = GenerateName();
+  }
+  return name;
 }
 
 }  // namespace voter

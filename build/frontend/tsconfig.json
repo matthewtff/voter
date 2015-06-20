@@ -8,6 +8,7 @@
         "sourceMap": true
     },
     "files": [
+        "ts/command.ts",
         "ts/index.ts",
         "ts/room.ts",
         "ts/room_page.ts",

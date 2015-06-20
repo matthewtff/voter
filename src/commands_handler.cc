@@ -5,8 +5,7 @@ namespace voter {
 const char* CommandsHandler::kCommandName = "command";
 const char* CommandsHandler::kData = "data";
 
-CommandsHandler::CommandsHandler(const Delegate* delegate)
-    : delegate_(delegate) {
+CommandsHandler::CommandsHandler(Delegate* delegate) : delegate_(delegate) {
 }
 
 CommandsHandler::~CommandsHandler() {
@@ -37,6 +36,14 @@ bool CommandsHandler::HasActiveConnection() const {
   return response_ && !response_->IsComplete();
 }
 
+void CommandsHandler::AddObserver(Observer* observer) {
+  observers_.push_back(observer);
+}
+
+void CommandsHandler::RemoveObserver(Observer* observer) {
+  observers_.remove(observer);
+}
+
 // private
 
 void CommandsHandler::TryHandleMessage(const koohar::Request& request) {
@@ -60,6 +67,9 @@ void CommandsHandler::DispatchMessages() {
   response_->SendJSON(data);
   response_.reset();
   message_queue_.clear();
+  for (Observer* observer : observers_) {
+    observer->OnConnectionGone();
+  }
 }
 
 }  // namespace voter

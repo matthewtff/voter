@@ -36,7 +36,7 @@ class RoomManager : public CommandsHandler,
       typename koohar::ServerAsio::TimeoutHandle timeout_handle);
 
   // CommandsHandler::Delegate implementation.
-  bool ShouldHandleRequest(const koohar::Request& request) const override;
+  bool ShouldHandleRequest(const koohar::Request& request) override;
 
   // CommandsHandler implementation.
   bool OnRequest(koohar::Request&& request,

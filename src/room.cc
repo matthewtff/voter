@@ -13,7 +13,7 @@
 namespace voter {
 namespace {
 
-using UserIdChecker = MethodChecker<User, std::string>;
+using UserChecker = MethodChecker<User, std::string>;
 
 const char kAddUserCommand[] = "add_user";
 const char kGetAllUsersCommand[] = "get_all_users";
@@ -53,7 +53,7 @@ Room::~Room() {
   room_manager_->ClearInterval(check_emptyness_interval_);
 }
 
-bool Room::ShouldHandleRequest(const koohar::Request& request) const {
+bool Room::ShouldHandleRequest(const koohar::Request& request) {
   return request.Corresponds(kRoomPath) && request.Body("id") == id_;
 }
 
@@ -66,9 +66,14 @@ bool Room::OnRequest(koohar::Request&& request, koohar::Response&& response) {
   });
 }
 
+bool Room::CheckNameIsUnique(const std::string& name) {
+  return std::none_of(users_.begin(), users_.end(),
+                      UserChecker(name, &User::name));
+}
+
 void Room::RemoveUser(const std::string& user_id) {
   UserList::iterator user = std::find_if(users_.begin(), users_.end(),
-                                         UserIdChecker(user_id, &User::id));
+                                         UserChecker(user_id, &User::id));
   const bool found_user = user != users_.end();
   assert(found_user && "We should not try removing user that doesn't exist");
   if (found_user) {
@@ -89,7 +94,8 @@ void Room::BroadcastMessage(const koohar::JSON::Object& message) {
 // private
 
 void Room::OnAddUser(const koohar::Request& /* request */) {
-  users_.emplace_front(this);
+  users_.emplace_front(this,
+                       users_.empty() ? User::Role::Admin : User::Role::Voter);
   // Also send back to user his id and name.
   SendMessage(CreateUserInfoMessage(users_.front()));
 }
@@ -110,7 +116,7 @@ void Room::OnVerifyUser(const koohar::Request& request) {
   const std::string& user_id = request.Body("id");
   const bool user_exists =
       std::any_of(users_.begin(), users_.end(),
-                  UserIdChecker(user_id, &User::id));
+                  UserChecker(user_id, &User::id));
 
   koohar::JSON::Object verified_message;
   verified_message[CommandsHandler::kCommandName] = kVerifyUserCommand;
@@ -130,12 +136,12 @@ void Room::CheckEmptyness() {
   const bool room_is_empty = left_users.size() == users_.size();
   if (room_is_empty) {
     room_manager_->RemoveRoom(id_);
-  } else {
-    std::for_each(left_users.begin(), left_users.end(),
-                  std::bind(&Room::RemoveUser, this, std::placeholders::_1));
-    if (admin_left) {
-      SelectNewAdministrator();
-    }
+    return;
+  }
+  std::for_each(left_users.begin(), left_users.end(),
+                std::bind(&Room::RemoveUser, this, std::placeholders::_1));
+  if (admin_left) {
+    SelectNewAdministrator();
   }
 }
 

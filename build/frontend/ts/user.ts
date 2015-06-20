@@ -33,6 +33,10 @@ class User {
     return this.info_.is_administrator;
   }
 
+  identity_for_test() {
+    return this.name() + '(' + this.id() + ')';
+  }
+
   Save() : void {
     localStorage.setItem(User.kUserInfoPath, JSON.stringify(this.info_));
   }

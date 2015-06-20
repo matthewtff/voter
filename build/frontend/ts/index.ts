@@ -62,7 +62,7 @@ class IndexPage implements Utils.MessageProcessor {
         if (room_id == room_info.room_id) {
           Room.MoveToRoom({ room_id: room_id });
         }
-      });
+      }, this);
     }
   }
 

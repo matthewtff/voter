@@ -1,3 +1,4 @@
+/// <reference path="command.ts" />
 /// <reference path="room.ts" />
 /// <reference path="utils.ts" />
 /// <reference path="user.ts" />
@@ -9,25 +10,44 @@ interface MessageHandler {
 
 class RoomPage implements Utils.MessageProcessor {
   private static kIndexPagePath = "/html/index.html";
+  private static kMaximumNumberOfBrokenRequests = 5;
   private users_ : User[];
   private current_user_ : User;
   private room_ : Room;
   private message_handlers_ : MessageHandler[];
+  private number_of_broken_requests_ : number;
+
+  // UI:
+  private static kChatMessageHelp = "Enter message";
+  private static kDisabledClass = "disabled";
+  private chat_ : Element;
+  private chat_input_ : Element;
 
   constructor() {
     this.current_user_ = null;
     this.users_ = [];
     this.message_handlers_ = [];
-    this.AddMessageHandler("chat_message", this.OnChatMessage.bind(this));
+    this.number_of_broken_requests_ = 0;
+    this.chat_ = document.querySelector('.chat-holder .chat');
+    this.chat_input_ = document.querySelector('.message-input .input');
+    this.chat_input_.addEventListener('focus', this.RemoveHelp.bind(this));
+    this.chat_input_.addEventListener('blur', this.ReturnHelp.bind(this));
+    this.chat_input_.addEventListener('keydown',
+                                      this.TrySendChatMessage.bind(this));
+
+    this.AddMessageHandler("user_message", this.OnChatMessage.bind(this));
     this.AddMessageHandler("user_info", this.OnUserInfo.bind(this));
     this.AddMessageHandler("user_leave", this.OnUserLeave.bind(this));
     this.AddMessageHandler("add_user", this.OnAddUser.bind(this));
     this.AddMessageHandler("admin_selected", this.OnAdminSelected.bind(this));
     this.AddMessageHandler("users_list", this.OnUsersList.bind(this));
+    /*this.AddMessageHandler("keep_alive", this.MakeLongPoll.bind(this));*/
     try {
       this.room_ = Room.Load();
     } catch (error) {
       console.error(error.message);
+    }
+    if (!this.room_) {
       RoomPage.MoveToHomePage();
     }
     this.RenderRoomInfo();
@@ -35,7 +55,8 @@ class RoomPage implements Utils.MessageProcessor {
     this.GetAllUsers();
   }
 
-  OnMessageReceived(response : Object, is_long_poll : Boolean) {
+  OnMessageReceived(response : Object, is_long_poll : boolean) {
+    this.number_of_broken_requests_ = 0;
     this.message_handlers_.forEach(function (handler) {
       if (response[Utils.kCommand] == handler.command) {
         try {
@@ -56,15 +77,25 @@ class RoomPage implements Utils.MessageProcessor {
     // Check if it was typed url with room hash
     if (hash.length > 0) {
       Room.MoveToRoom({room_id : hash.slice(3)});
+    } else if (url.indexOf("long_poll") != -1) {
+      if (++this.number_of_broken_requests_ <
+          RoomPage.kMaximumNumberOfBrokenRequests) {
+        // Longpoll request could aborted if we sent another request using XHR.
+        this.MakeLongPoll();
+      }
     } else {
       // TODO(matthewtff): Show error message...
+      console.error('Got aborted message for %s', url);
+      //RoomPage.MoveToHomePage();
     }
   }
 
   private OnChatMessage(response : Object) {
     const user = this.FindUser(response['user_id']);
-    const message = response[Utils.kData];
-    Utils.Write(user.name() + ' : ' + message);
+    const [type, message_command] = Command.GetCommand(response[Utils.kData]);
+    if (message_command['message']) {
+      this.AppendChatMessage(user, message_command['message']);
+    }
   }
 
   private OnUserInfo(response : Object) {
@@ -76,17 +107,17 @@ class RoomPage implements Utils.MessageProcessor {
 
   private OnUserLeave(response : Object) {
     const removed_user = this.RemoveUser(response[Utils.kData]);
-    Utils.Write('User disconnected: ' + removed_user.name());
+    Utils.Write('User disconnected: ' + removed_user.identity_for_test());
   }
 
   private OnAddUser(response : Object) {
     const new_user = this.UpdateUser(response[Utils.kData]);
-    Utils.Write('User connected: ' + new_user.name());
+    Utils.Write('User connected: ' + new_user.identity_for_test());
   }
 
   private OnAdminSelected(response : Object) {
     const administrator = this.UpdateUser(response[Utils.kData]);
-    Utils.Write('Admin selected: ' + administrator.name());
+    Utils.Write('Admin selected: ' + administrator.identity_for_test());
   }
 
   private OnUsersList(response : Object) {
@@ -97,7 +128,7 @@ class RoomPage implements Utils.MessageProcessor {
     }
     users_list.forEach(function (user_info) {
       const user = this.UpdateUser(user_info);
-      Utils.Write('User available: ' + user.name());
+      Utils.Write('User available: ' + user.identity_for_test());
     }, this);
   }
 
@@ -186,6 +217,52 @@ class RoomPage implements Utils.MessageProcessor {
       updated_user = new_user;
     }
     return updated_user;
+  }
+
+  private RemoveHelp() : void {
+    this.chat_input_.classList.remove(RoomPage.kDisabledClass);
+    if (this.chat_input_.textContent == RoomPage.kChatMessageHelp) {
+      this.chat_input_.textContent = "";
+    }
+  }
+
+  private ReturnHelp() : void {
+    if (this.chat_input_.textContent.length == 0) {
+      this.chat_input_.classList.add(RoomPage.kDisabledClass);
+      this.chat_input_.textContent = RoomPage.kChatMessageHelp;
+    }
+  }
+
+  private TrySendChatMessage(keydown_event : KeyboardEvent) : void {
+    if (keydown_event.keyCode != 13) {
+      return;
+    }
+    const chat_message = this.chat_input_.textContent;
+    if (chat_message.length > 0) {
+      const parameters = "id=" + this.current_user_.id() +
+          "&data=" + Command.CreateCommand(Command.Type.ChatMessage,
+                                           {message : chat_message});
+      Utils.RunHttpRequest('/user?command=user_message&' + parameters,
+                           this);
+      this.chat_input_.textContent = "";
+    }
+  }
+
+  private AppendChatMessage(user : User, message : string) : void {
+    const message_div = document.createElement('div');
+    message_div.classList.add('message');
+    const user_name_div = document.createElement('div');
+    user_name_div.classList.add('user-name');
+    user_name_div.textContent = user.name();
+    const message_contents_div = document.createElement('div');
+    message_contents_div.classList.add('contents');
+    message_contents_div.textContent = message;
+
+    message_div.appendChild(user_name_div);
+    message_div.appendChild(message_contents_div);
+
+    this.chat_.appendChild(message_div);
+    this.chat_.scrollTop = this.chat_.scrollHeight;
   }
 
   static MoveToHomePage() : void {

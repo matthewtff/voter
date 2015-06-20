@@ -12,8 +12,6 @@
 
 namespace voter {
 
-class Room;
-
 class User : public CommandsHandler,
              public CommandsHandler::Delegate,
              public CommandsHandler::Observer {
@@ -22,11 +20,19 @@ class User : public CommandsHandler,
     Admin,
     Voter
   };
-  User(Room* room);
+
+  class Delegate {
+   public:
+    virtual bool CheckNameIsUnique(const std::string& name) = 0;
+    virtual void BroadcastMessage(const koohar::JSON::Object& message) = 0;
+    virtual void RemoveUser(const std::string& user_id) = 0;
+  };
+
+  User(Delegate* delegate, const Role role);
   ~User();
 
   // CommandsHandler::Delegate implementation.
-  bool ShouldHandleRequest(const koohar::Request& request) const override;
+  bool ShouldHandleRequest(const koohar::Request& request) override;
 
   // CommandsHandler::Observer implementation.
   void OnConnectionGone() override;
@@ -46,12 +52,14 @@ class User : public CommandsHandler,
   void OnLongPoll(const koohar::Request& request);
   void OnUserLeave(const koohar::Request& /* request */);
 
-  Room* const room_;
+  std::string SelectName();
+
+  Delegate* delegate_;
   const std::string name_;
   const std::string id_;
   Role role_;
   std::chrono::steady_clock::time_point connection_gone_since_;
-  mutable std::chrono::steady_clock::time_point last_seen_alive_;
+  std::chrono::steady_clock::time_point last_seen_alive_;
 };  // class User
 
 }  // namespace voter

@@ -1,3 +1,23 @@
+@font-face {
+  font-family: "Roboto-Light";
+  src: url('/fonts/Roboto-Light.ttf');
+}
+
+@font-face {
+  font-family: "Roboto-Black";
+  src: url('/fonts/Roboto-Black.ttf');
+}
+
+@font-face {
+  font-family: "Roboto-Regular";
+  src: url('/fonts/Roboto-Regular.ttf');
+}
+
+@font-face {
+  font-family: "Merri-Chris";
+  src: url('/fonts/merrichris.ttf');
+}
+
 body {
   background-color: #f8f8d1;
   padding: 0px;
@@ -7,8 +27,11 @@ body {
 header {
   float: initial;
   margin-top: 2vh;
-  font-size: 20px;
-  color: #387793;
+  font-size: 18px;
+  border-bottom: 1px dotted black;
+  margin-bottom: 20px;
+  font-family: "Roboto-Light";
+  color: #3f4648;
 }
 
 .main-page {
@@ -18,6 +41,7 @@ header {
 
 .room-title {
   float: left;
+  margin-bottom: 10px;
 }
 
 .room-id {
@@ -31,11 +55,15 @@ header {
 
 .room-url {
   float: left;
+  margin-bottom: 10px;
 }
 
-.copy-room-url {
+.select-room-url {
+  font-weight: bold;
   float: left;
   margin-left: 5%;
+  color: #337294;
+  font-family: "Roboto-Black";
 }
 
 .button {
@@ -45,55 +73,100 @@ header {
 header .button {
   float: right;
   margin-right: 10px;
+  padding-bottom: 30px;
   color: black;
 }
 
-.tab-view {
-  font-size: 25px;
-  margin-top: 30px;
-  margin-bottom: 20px;
-}
-
-.tab-view .tab {
-  text-align: center;
+.tasks-container {
+  width: 65%;
   float: left;
-}
-
-.tab-view .left-holder {
-  width: 5%;
-  border-bottom: 2px solid black;
-}
-
-.tab-view .right-holder {
-  width: 55%;
-  border-bottom: 2px solid black;
-}
-
-.tab-view .holder {
-  padding-top: 10px;
-  color: #f8f8d1;
-}
-
-.tab-view .active {
-  padding-top: 10px;
-  border-left: 2px solid black;
-  border-top: 2px solid black;
-  border-right: 2px solid black;
-  width: 25%;
-}
-
-.tab-view .background {
-  margin-top: 14px;
-  border: 2px solid black;
-  font-size: 20px;
-  bottom: 0px;
-  width: 13%;
 }
 
 .tasks-list {
-  border: 3px solid gray;
+  overflow-y: auto;
+}
+
+.task {
+  border: 1px dotted black;
+  margin-bottom: 10px;
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.task-header {
+  padding-left: 35px;
+  padding-right: 15px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-family: "Roboto-Regular";
+  font-size: 2em;
   float: left;
-  width: 65%;
+}
+
+.open-description {
+  float: right;
+  padding: 20px;
+}
+
+.task-description {
+  padding-left: 15px;
+  padding-right: 15px;
+  float: left;
+  font-family: "Roboto-Light";
+  font-size: 1.1em;
+}
+
+.current-votes {
+  float: left;
+}
+
+.vote-estimates {
+  float: left;
+}
+
+.vote {
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  border: 3px solid black;
+  float: left;
+  background-color: #f8f8d1;
+}
+
+.my-vote {
+  width: 140px;
+  height: 140px;
+  border: 6px solid black;
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.other-vote {
+  background-color: rgba(255, 255, 255, 0.4);
+  border: 1px solid gray;
+}
+
+.voted {
+  background-color: gray;
+}
+
+.vote-inner {
+  text-align: center;
+  font-family: "Merri-Chris";
+  font-size: 30px;
+  margin-top: 15px;
+}
+
+.my-vote-inner {
+  font-size: 72px;
+  margin-top: 25px;
+}
+
+.add-task.input {
+  float: right;
+  width: 300px;
+}
+
+.add-task.input .input-inner {
+  font-family: "Merri-Chris";
 }
 
 .chat-holder {
@@ -102,8 +175,9 @@ header .button {
 }
 
 .chat {
-  border: 3px solid black;
+  border: 1px dotted black;
   max-height: 50vh;
+  min-height: 50vh;
   overflow-y: auto;
 }
 
@@ -123,14 +197,17 @@ header .button {
   word-wrap: break-word;
 }
 
-.message-input {
+.input {
   margin-top: 20px;
-  min-height: 40px;
   border: solid 3px white;
 }
 
-.message-input .input {
-  font-size: 20px;
+.input:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.input-inner {
+  font-size: 24px;
   font-family: "Roboto-Light";
   padding-left: 5px;
   color: #3f4648;
@@ -138,7 +215,7 @@ header .button {
   overflow-y: auto;
 }
 
-.message-input .input:focus {
+.input-inner:focus {
   outline: 0px solid transparent;
 }
 

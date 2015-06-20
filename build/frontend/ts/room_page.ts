@@ -18,10 +18,13 @@ class RoomPage implements Utils.MessageProcessor {
   private number_of_broken_requests_ : number;
 
   // UI:
+  private static kAddTask = "Add task";
   private static kChatMessageHelp = "Enter message";
   private static kDisabledClass = "disabled";
   private chat_ : Element;
   private chat_input_ : Element;
+  private add_task_input_ : Element;
+  private select_link_ : Element;
 
   constructor() {
     this.current_user_ = null;
@@ -29,19 +32,32 @@ class RoomPage implements Utils.MessageProcessor {
     this.message_handlers_ = [];
     this.number_of_broken_requests_ = 0;
     this.chat_ = document.querySelector('.chat-holder .chat');
-    this.chat_input_ = document.querySelector('.message-input .input');
-    this.chat_input_.addEventListener('focus', this.RemoveHelp.bind(this));
-    this.chat_input_.addEventListener('blur', this.ReturnHelp.bind(this));
+    this.chat_input_ = document.querySelector('.message.input .input-inner');
+    this.add_task_input_ =
+        document.querySelector('.add-task.input .input-inner');
+    this.select_link_ = document.querySelector('.select-room-url');
+
+    // Registering event listeners.
+    this.chat_input_.addEventListener('focus',
+        this.RemoveHelp.bind(this, RoomPage.kChatMessageHelp));
+    this.chat_input_.addEventListener('blur',
+        this.ReturnHelp.bind(this, RoomPage.kChatMessageHelp));
     this.chat_input_.addEventListener('keydown',
                                       this.TrySendChatMessage.bind(this));
 
-    this.AddMessageHandler("user_message", this.OnChatMessage.bind(this));
+    this.add_task_input_.addEventListener('focus',
+        this.RemoveHelp.bind(this, RoomPage.kAddTask));
+    this.add_task_input_.addEventListener('blur',
+        this.ReturnHelp.bind(this, RoomPage.kAddTask));
+
+    this.select_link_.addEventListener('click', this.SelectRoomUrl.bind(this));
+
+    this.AddMessageHandler("user_message", this.OnUserMessage.bind(this));
     this.AddMessageHandler("user_info", this.OnUserInfo.bind(this));
     this.AddMessageHandler("user_leave", this.OnUserLeave.bind(this));
     this.AddMessageHandler("add_user", this.OnAddUser.bind(this));
     this.AddMessageHandler("admin_selected", this.OnAdminSelected.bind(this));
     this.AddMessageHandler("users_list", this.OnUsersList.bind(this));
-    /*this.AddMessageHandler("keep_alive", this.MakeLongPoll.bind(this));*/
     try {
       this.room_ = Room.Load();
     } catch (error) {
@@ -86,11 +102,11 @@ class RoomPage implements Utils.MessageProcessor {
     } else {
       // TODO(matthewtff): Show error message...
       console.error('Got aborted message for %s', url);
-      //RoomPage.MoveToHomePage();
+      RoomPage.MoveToHomePage();
     }
   }
 
-  private OnChatMessage(response : Object) {
+  private OnUserMessage(response : Object) {
     const user = this.FindUser(response['user_id']);
     const [type, message_command] = Command.GetCommand(response[Utils.kData]);
     if (message_command['message']) {
@@ -219,17 +235,19 @@ class RoomPage implements Utils.MessageProcessor {
     return updated_user;
   }
 
-  private RemoveHelp() : void {
-    this.chat_input_.classList.remove(RoomPage.kDisabledClass);
-    if (this.chat_input_.textContent == RoomPage.kChatMessageHelp) {
-      this.chat_input_.textContent = "";
+  private RemoveHelp(default_message : string, event : FocusEvent) : void {
+    const element = <Element> event.target;
+    element.classList.remove(RoomPage.kDisabledClass);
+    if (element.textContent == default_message) {
+      element.textContent = "";
     }
   }
 
-  private ReturnHelp() : void {
-    if (this.chat_input_.textContent.length == 0) {
-      this.chat_input_.classList.add(RoomPage.kDisabledClass);
-      this.chat_input_.textContent = RoomPage.kChatMessageHelp;
+  private ReturnHelp(default_message : string, event : FocusEvent) : void {
+    const element = <Element> event.target;
+    if (element.textContent.length == 0) {
+      element.classList.add(RoomPage.kDisabledClass);
+      element.textContent = default_message;
     }
   }
 
@@ -263,6 +281,15 @@ class RoomPage implements Utils.MessageProcessor {
 
     this.chat_.appendChild(message_div);
     this.chat_.scrollTop = this.chat_.scrollHeight;
+  }
+
+  private SelectRoomUrl() : void {
+    const selection = getSelection();
+    const room_url_div = document.querySelector('.room-url');
+    const range = document.createRange();
+    range.selectNodeContents(room_url_div);
+    selection.removeAllRanges();
+    selection.addRange(range);
   }
 
   static MoveToHomePage() : void {

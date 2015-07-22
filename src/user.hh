@@ -26,6 +26,8 @@ class User : public CommandsHandler,
     virtual bool CheckNameIsUnique(const std::string& name) = 0;
     virtual void BroadcastMessage(const koohar::JSON::Object& message) = 0;
     virtual void RemoveUser(const std::string& user_id) = 0;
+    virtual void MakeRequest(koohar::ClientRequest&&,
+                             koohar::OutputConnection::Callback) = 0;
   };
 
   User(Delegate* delegate, const Role role);
@@ -48,9 +50,13 @@ class User : public CommandsHandler,
 
  private:
   // Command handlers:
+  void OnGetTask(const koohar::Request& request);
   void OnUserMessage(const koohar::Request& request);
   void OnLongPoll(const koohar::Request& request);
   void OnUserLeave(const koohar::Request& /* request */);
+
+  void OnReceiveTaskInfo(koohar::ClientRequest&& /* request */,
+                         koohar::ClientResponse&& response);
 
   std::string SelectName();
 

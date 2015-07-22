@@ -60,6 +60,13 @@ Room commands:
     output:
       "command" : "verify_user",
       "data" : valid : boolean;
+  - "get_task":
+    input:
+      id : string
+      task_id : string
+    output:
+      "command" : "get_task",
+      "data" : JSON.Object
 
 User commands:
   dictionary UserInfo {

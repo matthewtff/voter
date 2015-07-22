@@ -8,12 +8,20 @@
         "sourceMap": true
     },
     "files": [
-        "ts/command.ts",
-        "ts/index.ts",
-        "ts/room.ts",
-        "ts/room_page.ts",
-        "ts/user.ts",
-        "ts/utils.ts",
-        "ts/validator.ts"
+      "ts/command.ts",
+      "ts/index.ts",
+      "ts/model/common.ts",
+      "ts/model/tasks.ts",
+      "ts/model/voting.ts",
+      "ts/room.ts",
+      "ts/room_page.ts",
+      "ts/typings/es6-promise/es6-promise.d.ts",
+      "ts/ui/chat.ts",
+      "ts/ui/tasks.ts",
+      "ts/ui/utils.ts",
+      "ts/ui/voting.ts",
+      "ts/user.ts",
+      "ts/utils.ts",
+      "ts/validator.ts"
     ]
 }

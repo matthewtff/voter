@@ -61,6 +61,11 @@ void RoomManager::ClearInterval(
   interval_delegate_->ClearInterval(timeout_handle);
 }
 
+void RoomManager::MakeRequest(koohar::ClientRequest&& request,
+                              koohar::OutputConnection::Callback callback) {
+  interval_delegate_->MakeRequest(std::move(request), callback);
+}
+
 bool RoomManager::ShouldHandleRequest(const koohar::Request& request) {
   return request.Corresponds(kRoomManagerPath);
 }

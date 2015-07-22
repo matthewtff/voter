@@ -10,6 +10,7 @@ namespace {
 
 const char kAddUserCommand[] = "add_user";
 const char kAdminSelectedMessage[] = "admin_selected";
+const char kGetTaskCommand[] = "get_task";
 const char kUserMessageCommand[] = "user_message";
 const char kIsAdministrator[] = "is_administrator";
 const char kLongPollCommand[] = "long_poll";
@@ -42,7 +43,8 @@ std::string GenerateName() {
 
   std::random_device device;
   std::default_random_engine engine(device());
-  std::uniform_int_distribution<int> uniform_dist(0, array_size(kNames) - 1);
+  std::uniform_int_distribution<int> uniform_dist(
+      0, koohar::array_size(kNames) - 1);
   return kNames[uniform_dist(engine)];
 }
 
@@ -70,6 +72,7 @@ User::User(Delegate* delegate, const Role role)
       connection_gone_since_(std::chrono::steady_clock::now()),
       last_seen_alive_(std::chrono::steady_clock::now()) {
   AddObserver(this);
+  AddHandler(kGetTaskCommand, CreateHandler(&User::OnGetTask, this));
   AddHandler(kUserMessageCommand, CreateHandler(&User::OnUserMessage, this));
   AddHandler(kUserLeaveCommand, CreateHandler(&User::OnUserLeave, this));
   AddHandler(kLongPollCommand, CreateHandler(&User::OnLongPoll, this));
@@ -134,6 +137,26 @@ koohar::JSON::Object User::GetUserInfo() const {
 }
 
 // private
+
+void User::OnGetTask(const koohar::Request& request) {
+  static const char kIssueURL[] = "http://st-api.yandex-team.ru/v2/issues/";
+  const std::string task_id = request.Body("task_id");
+  koohar::LOG(koohar::kInfo) << "Requesting task " << task_id << std::endl;
+  delegate_->MakeRequest(koohar::ClientRequest(kIssueURL + task_id),
+                         std::bind(&User::OnReceiveTaskInfo,
+                                   this,
+                                   std::placeholders::_1,
+                                   std::placeholders::_2));
+}
+
+void User::OnReceiveTaskInfo(koohar::ClientRequest&& /* request */,
+                             koohar::ClientResponse&& response) {
+  koohar::JSON::Object task_info_message;
+  task_info_message[CommandsHandler::kCommandName] = kGetTaskCommand;
+  task_info_message[CommandsHandler::kData] =
+      koohar::JSON::Parse(response.body());
+  SendMessage(task_info_message);
+}
 
 void User::OnUserMessage(const koohar::Request& request) {
   koohar::JSON::Object send_message;

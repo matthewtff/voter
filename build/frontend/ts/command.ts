@@ -1,6 +1,8 @@
 module Command {
   export enum Type {
-    ChatMessage
+    ChatMessage,
+    CreateTask,
+    VoteEstimage,
   }
 
   export function CreateCommand(command_type : Type, data : Object) : string {

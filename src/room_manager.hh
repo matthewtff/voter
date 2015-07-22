@@ -10,8 +10,10 @@
 #include "room.hh"
 
 namespace koohar {
-class ServerAsio;
+class ClientRequest;
+class OutputConnection;
 class Request;
+class ServerAsio;
 }  // namespace koohar
 
 namespace voter {
@@ -25,6 +27,8 @@ class RoomManager : public CommandsHandler,
         std::chrono::milliseconds,
         typename koohar::ServerAsio::TimerCallback) = 0;
     virtual void ClearInterval(typename koohar::ServerAsio::TimeoutHandle) = 0;
+    virtual void MakeRequest(koohar::ClientRequest&&,
+                             typename koohar::OutputConnection::Callback) = 0;
   };  // class IntervalDelegate
 
   RoomManager(IntervalDelegate* interval_delegate);
@@ -34,6 +38,8 @@ class RoomManager : public CommandsHandler,
       std::function<void()> callback);
   void ClearInterval(
       typename koohar::ServerAsio::TimeoutHandle timeout_handle);
+  void MakeRequest(koohar::ClientRequest&& request,
+                   typename koohar::OutputConnection::Callback callback);
 
   // CommandsHandler::Delegate implementation.
   bool ShouldHandleRequest(const koohar::Request& request) override;

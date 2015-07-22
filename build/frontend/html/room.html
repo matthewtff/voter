@@ -24,40 +24,51 @@
       <div class="content">
         <div class="tasks-container">
           <div class="tasks-list">
-            <div class="task">
+            <!-- <div class="task">
               <div class="task-header">Task #1 Ticket title here</div>
               <div class="open-description">V</div>
               <div class="task-description">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</div>
               <div class="clear-both"></div>
-              <div class="current-votes">
-                <div class="vote my-vote">
-                  <div class="vote-inner my-vote-inner">15</div>
+              <div class="votes">
+                <div class="current-votes">
+                  <div class="vote my-vote">
+                    <div class="vote-inner my-vote-inner">15</div>
+                  </div>
+                  <div class="other-votes">
+                    <div class="vote other-vote"></div>
+                    <div class="vote other-vote voted"></div>
+                    <div class="vote other-vote revealed">
+                      <div class="vote-inner">1</div>
+                    </div>
+                  </div>
                 </div>
-                <div class="vote other-vote voted"></div>
-                <div class="vote other-vote"></div>
-                <div class="vote other-vote voted"></div>
+                <div class="vote-estimates">
+                  <div class="vote">
+                    <div class="vote-inner">5</div>
+                  </div>
+                  <div class="vote">
+                    <div class="vote-inner">10</div>
+                  </div>
+                  <div class="vote"></div>
+                  <div class="vote">
+                    <div class="vote-inner">20</div>
+                  </div>
+                  <div class="vote">
+                    <div class="vote-inner">...</div>
+                  </div>
+                </div>
+              </div>
+              <div class="button">
+                <div class="button-inner">Start</div>
               </div>
               <div class="clear-both"></div>
-              <div class="vote-estimates">
-                <div class="vote">
-                  <div class="vote-inner">5</div>
-                </div>
-                <div class="vote">
-                  <div class="vote-inner">10</div>
-                </div>
-                <div class="vote"></div>
-                <div class="vote">
-                  <div class="vote-inner">20</div>
-                </div>
-              </div>
-              <div class="clear-both"></div>
-            </div>
-            <div class="task">
+            </div> -->
+            <!-- <div class="task">
               <div class="task-header">Task #2 Ticket title here</div>
               <div class="open-description">V</div>
               <div style="display:none;" class="task-description">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</div>
               <div class="clear-both"></div>
-            </div>
+            </div> -->
           </div>
           <div class="add-task input">
             <div contenteditable=true class="input-inner disabled">Add task</div>
@@ -72,10 +83,17 @@
         </div>
       </div>
       <div class="clear-both"></div>
-      <script src="/js/utils.js"></script>
       <script src="/js/command.js"></script>
+      <script src="/js/model/common.js"></script>
+      <script src="/js/model/tasks.js"></script>
+      <script src="/js/model/voting.js"></script>
       <script src="/js/room.js" ></script>
+      <script src="/js/ui/chat.js"></script>
+      <script src="/js/ui/tasks.js"></script>
+      <script src="/js/ui/utils.js" ></script>
+      <script src="/js/ui/voting.js" ></script>
       <script src="/js/user.js" ></script>
+      <script src="/js/utils.js" ></script>
 
       <script src="/js/room_page.js" async></script>
     </div>

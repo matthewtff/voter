@@ -9,6 +9,11 @@
 }
 
 @font-face {
+  font-family: "Roboto-Bold";
+  src: url('/fonts/Roboto-Bold.ttf');
+}
+
+@font-face {
   font-family: "Roboto-Regular";
   src: url('/fonts/Roboto-Regular.ttf');
 }
@@ -32,6 +37,7 @@ header {
   margin-bottom: 20px;
   font-family: "Roboto-Light";
   color: #3f4648;
+  cursor: default;
 }
 
 .main-page {
@@ -47,6 +53,7 @@ header {
 .room-id {
   float: left;
   margin-left: 5px;
+  font-family: "Roboto-Bold";
 }
 
 .clear-both {
@@ -93,18 +100,21 @@ header .button {
 }
 
 .task-header {
-  padding-left: 35px;
-  padding-right: 15px;
+  padding-left: 5%;
+  padding-right: 5%;
   padding-top: 10px;
   padding-bottom: 10px;
   font-family: "Roboto-Regular";
-  font-size: 2em;
+  font-size: 1.3em;
   float: left;
+  width: 80%;
 }
 
 .open-description {
   float: right;
-  padding: 20px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  width: 10%;
 }
 
 .task-description {
@@ -115,12 +125,21 @@ header .button {
   font-size: 1.1em;
 }
 
+.votings {
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+
 .current-votes {
   float: left;
+  margin-top: 20px;
 }
 
 .vote-estimates {
   float: left;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .vote {
@@ -130,21 +149,31 @@ header .button {
   border: 3px solid black;
   float: left;
   background-color: #f8f8d1;
+  margin-left: 10px;
 }
 
 .my-vote {
   width: 140px;
   height: 140px;
-  border: 6px solid black;
+  border: 4px solid black;
   background-color: rgba(255, 255, 255, 0.4);
+}
+
+.other-votes {
+  float: left;
 }
 
 .other-vote {
   background-color: rgba(255, 255, 255, 0.4);
-  border: 1px solid gray;
+  border: 1px solid rgb(70, 70, 70);
+  margin-top: 40px;
 }
 
-.voted {
+.other-clean {
+  background-color: #f8f8d1;
+}
+
+.other-voted {
   background-color: gray;
 }
 
@@ -158,6 +187,33 @@ header .button {
 .my-vote-inner {
   font-size: 72px;
   margin-top: 25px;
+}
+
+.button {
+  width: 200px;
+  margin-right: 20px;
+  float: right;
+  border-image: url('/images/join_button.png') 23 9 15 18;
+  border-top: 23px;
+  border-right: 9px;
+  border-bottom: 15px;
+  border-left: 18px;
+  transform: rotateX(180deg);
+}
+
+.button-inner {
+  font-size: 30px;
+  font-family: "Merri-Chris";
+  padding-top: 10px;
+  color: #3f4648;
+  text-align: center;
+  background-color: #f8f8d1;
+  transform: rotateX(180deg);
+}
+
+.button-inner:hover {
+  background-color: white;
+  opacity: 0.5;
 }
 
 .add-task.input {
@@ -179,6 +235,7 @@ header .button {
   max-height: 50vh;
   min-height: 50vh;
   overflow-y: auto;
+  font-family: "Roboto-Light";
 }
 
 .message {
@@ -191,6 +248,7 @@ header .button {
 .message .user-name {
   font-weight: bold;
   word-wrap: break-word;
+  font-family: "Roboto-Bold";
 }
 
 .message .contents {
@@ -221,4 +279,5 @@ header .button {
 
 .disabled {
   opacity: 0.5;
+  font-family: "Merri-Chris";
 }

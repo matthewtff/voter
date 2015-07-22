@@ -91,6 +91,11 @@ void Room::BroadcastMessage(const koohar::JSON::Object& message) {
   }
 }
 
+void Room::MakeRequest(koohar::ClientRequest&& request,
+                       koohar::OutputConnection::Callback callback) {
+  room_manager_->MakeRequest(std::move(request), callback);
+}
+
 // private
 
 void Room::OnAddUser(const koohar::Request& /* request */) {
@@ -130,14 +135,12 @@ void Room::CheckEmptyness() {
   for (User& user : users_) {
     if (user.CheckIfUnavailable()) {
       left_users.push_front(user.id());
-      admin_left = admin_left || user.role() == User::Role::Admin;
+      admin_left |= user.role() == User::Role::Admin;
     }
   }
   const bool room_is_empty = left_users.size() == users_.size();
-  if (room_is_empty) {
-    room_manager_->RemoveRoom(id_);
-    return;
-  }
+  if (room_is_empty)
+    return room_manager_->RemoveRoom(id_);
   std::for_each(left_users.begin(), left_users.end(),
                 std::bind(&Room::RemoveUser, this, std::placeholders::_1));
   if (admin_left) {

@@ -3,7 +3,7 @@
 interface UserInfo {
   user_id : string;
   user_name : string;
-  is_administrator : Boolean;
+  is_administrator : boolean;
 }
 
 class User {
@@ -21,19 +21,19 @@ class User {
     this.info_ = info;
   }
 
-  id() {
+  id() : string {
     return this.info_.user_id;
   }
 
-  name() {
+  name() : string {
     return this.info_.user_name;
   }
 
-  is_administrator() {
+  is_administrator() : boolean {
     return this.info_.is_administrator;
   }
 
-  identity_for_test() {
+  identity_for_test() : string {
     return this.name() + '(' + this.id() + ')';
   }
 

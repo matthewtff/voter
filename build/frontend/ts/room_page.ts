@@ -1,14 +1,26 @@
+/// <reference path="typings/es6-promise/es6-promise.d.ts" />
+
 /// <reference path="command.ts" />
 /// <reference path="room.ts" />
 /// <reference path="utils.ts" />
 /// <reference path="user.ts" />
+
+/// <reference path="model/common.ts" />
+/// <reference path="model/tasks.ts" />
+
+/// <reference path="ui/chat.ts" />
 
 interface MessageHandler {
   command : string;
   Handle(message : Object) : void;
 }
 
-class RoomPage implements Utils.MessageProcessor {
+interface TaskCallbacks {
+  resolve : (value? : Object | Thenable<Object>) => void;
+  reject : (error? : any) => void;
+}
+
+class RoomPage implements Utils.MessageProcessor, Common.MessageDispatcher {
   private static kIndexPagePath = "/html/index.html";
   private static kMaximumNumberOfBrokenRequests = 5;
   private users_ : User[];
@@ -16,40 +28,32 @@ class RoomPage implements Utils.MessageProcessor {
   private room_ : Room;
   private message_handlers_ : MessageHandler[];
   private number_of_broken_requests_ : number;
+  private user_message_listeners_ :
+      ((type : Command.Type, data : string, user_id : string) => boolean)[];
+  private user_action_listeners_ :
+      ((action : Common.UserAction, user_id : string) => void)[];
+  private tasks_ : Tasks.TaskList;
+  private tasks_callbacks_ : TaskCallbacks[];
 
   // UI:
-  private static kAddTask = "Add task";
-  private static kChatMessageHelp = "Enter message";
-  private static kDisabledClass = "disabled";
-  private chat_ : Element;
-  private chat_input_ : Element;
-  private add_task_input_ : Element;
   private select_link_ : Element;
+  private chat_ : UI.Chat;
 
   constructor() {
     this.current_user_ = null;
     this.users_ = [];
     this.message_handlers_ = [];
     this.number_of_broken_requests_ = 0;
-    this.chat_ = document.querySelector('.chat-holder .chat');
-    this.chat_input_ = document.querySelector('.message.input .input-inner');
-    this.add_task_input_ =
-        document.querySelector('.add-task.input .input-inner');
+    this.user_message_listeners_ = [];
+    this.user_action_listeners_ = [];
+    this.tasks_ = new Tasks.TaskList(this);
+    this.tasks_callbacks_ = [];
+
     this.select_link_ = document.querySelector('.select-room-url');
+    this.chat_ = new UI.Chat(
+        this.SendUserMessage.bind(this, Command.Type.ChatMessage));
 
     // Registering event listeners.
-    this.chat_input_.addEventListener('focus',
-        this.RemoveHelp.bind(this, RoomPage.kChatMessageHelp));
-    this.chat_input_.addEventListener('blur',
-        this.ReturnHelp.bind(this, RoomPage.kChatMessageHelp));
-    this.chat_input_.addEventListener('keydown',
-                                      this.TrySendChatMessage.bind(this));
-
-    this.add_task_input_.addEventListener('focus',
-        this.RemoveHelp.bind(this, RoomPage.kAddTask));
-    this.add_task_input_.addEventListener('blur',
-        this.ReturnHelp.bind(this, RoomPage.kAddTask));
-
     this.select_link_.addEventListener('click', this.SelectRoomUrl.bind(this));
 
     this.AddMessageHandler("user_message", this.OnUserMessage.bind(this));
@@ -57,6 +61,7 @@ class RoomPage implements Utils.MessageProcessor {
     this.AddMessageHandler("user_leave", this.OnUserLeave.bind(this));
     this.AddMessageHandler("add_user", this.OnAddUser.bind(this));
     this.AddMessageHandler("admin_selected", this.OnAdminSelected.bind(this));
+    this.AddMessageHandler("get_task", this.OnGetTask.bind(this));
     this.AddMessageHandler("users_list", this.OnUsersList.bind(this));
     try {
       this.room_ = Room.Load();
@@ -73,7 +78,7 @@ class RoomPage implements Utils.MessageProcessor {
 
   OnMessageReceived(response : Object, is_long_poll : boolean) {
     this.number_of_broken_requests_ = 0;
-    this.message_handlers_.forEach(function (handler) {
+    this.message_handlers_.forEach(handler => {
       if (response[Utils.kCommand] == handler.command) {
         try {
           handler.Handle(response);
@@ -106,11 +111,57 @@ class RoomPage implements Utils.MessageProcessor {
     }
   }
 
+  // Common.MessageDispatcher implementation:
+  AddUserMessagesObserver(
+      callback : (type : Command.Type, data : string) => boolean) : void {
+    this.user_message_listeners_.push(callback);
+  }
+
+  AddUserChangedObserver(callback : (action : Common.UserAction,
+                                     user_id : string) => void) : void {
+    this.user_action_listeners_.push(callback);
+  }
+
+  SendUserMessage(type : Command.Type, message : string) : void {
+    const parameters = "id=" + this.current_user_.id() +
+        "&data=" + Command.CreateCommand(type, {data : message});
+    Utils.RunHttpRequest('/user?command=user_message&' + parameters, this);
+  }
+
+  GetUsers() : User[] { return this.users_; }
+
+  GetCurrentUser() : User { return this.current_user_; }
+
+  GetTaskInfo(task_id : string) : Promise<Object> {
+    return new Promise<Object>((resolve, reject) => {
+      this.tasks_callbacks_[task_id] = {
+        resolve : resolve,
+        reject : reject
+      };
+      const parameters = "id=" + this.current_user_.id() + "&task_id=" + task_id;
+      Utils.RunHttpRequest('/user?command=get_task&' + parameters, this);
+    });
+  }
+
+  // private:
   private OnUserMessage(response : Object) {
     const user = this.FindUser(response['user_id']);
     const [type, message_command] = Command.GetCommand(response[Utils.kData]);
-    if (message_command['message']) {
-      this.AppendChatMessage(user, message_command['message']);
+    switch (type) {
+      case Command.Type.ChatMessage: {
+        if (message_command['data']) {
+          this.chat_.AddMessage(user.name(), message_command['data']);
+        }
+      }
+      default: {
+        if (user.id() == this.current_user_.id())
+          return;  // Do not send messages from current user.
+        for (const counter in this.user_message_listeners_) {
+          if (this.user_message_listeners_[counter](
+                  type, message_command['data'], user.id()))
+            return;
+        }
+      }
     }
   }
 
@@ -124,16 +175,38 @@ class RoomPage implements Utils.MessageProcessor {
   private OnUserLeave(response : Object) {
     const removed_user = this.RemoveUser(response[Utils.kData]);
     Utils.Write('User disconnected: ' + removed_user.identity_for_test());
+    this.user_action_listeners_.forEach(
+        callback => callback(Common.UserAction.Left, removed_user.id()));
   }
 
   private OnAddUser(response : Object) {
     const new_user = this.UpdateUser(response[Utils.kData]);
     Utils.Write('User connected: ' + new_user.identity_for_test());
+    this.user_action_listeners_.forEach(
+        callback => callback(Common.UserAction.Added, new_user.id()));
+    this.tasks_.BroadcastCurrentTasks();
   }
 
   private OnAdminSelected(response : Object) {
     const administrator = this.UpdateUser(response[Utils.kData]);
+    if (administrator.id() == this.current_user_.id()) {
+      this.current_user_ = administrator;
+    }
     Utils.Write('Admin selected: ' + administrator.identity_for_test());
+    Utils.Write('Current user is admin: ' + this.current_user_.is_administrator());
+    this.user_action_listeners_.forEach(callback =>
+        callback(Common.UserAction.AdminSelected, administrator.id()));
+  }
+
+  private OnGetTask(response : Object) {
+    const task_info = response[Utils.kData];
+    const task_id = task_info['key'];
+    if (this.tasks_callbacks_[task_id]) {
+      this.tasks_callbacks_[task_id].resolve(task_info);
+      delete this.tasks_callbacks_[task_id];
+    } else {
+      Utils.Write('No callback for ' + task_id + ' registered :(');
+    }
   }
 
   private OnUsersList(response : Object) {
@@ -142,10 +215,7 @@ class RoomPage implements Utils.MessageProcessor {
       throw new Error("Wrong users list: " + JSON.stringify(users_list));
       return;
     }
-    users_list.forEach(function (user_info) {
-      const user = this.UpdateUser(user_info);
-      Utils.Write('User available: ' + user.identity_for_test());
-    }, this);
+    users_list.forEach(user_info => this.UpdateUser(user_info));
   }
 
   private AddMessageHandler(command_name : string,
@@ -196,7 +266,7 @@ class RoomPage implements Utils.MessageProcessor {
     if (!user_info)
       return;
     var removed_user = null;
-    this.users_ = this.users_.filter(function (user) {
+    this.users_ = this.users_.filter(user => {
       if (user.id() == user_info.user_id) {
         removed_user = user;
         return false;
@@ -208,10 +278,9 @@ class RoomPage implements Utils.MessageProcessor {
 
   private FindUser(user_id : string) : User {
     var expected_user : User = null;
-    this.users_.forEach(function(user) {
-      if (user.id() == user_id) {
+    this.users_.forEach(user => {
+      if (user.id() == user_id)
         expected_user = user;
-      }
     });
     if (!expected_user) {
       throw new Error("Received message from user, that does not exist!");
@@ -222,7 +291,7 @@ class RoomPage implements Utils.MessageProcessor {
   private UpdateUser(user_info : Object) : User {
     var updated_user : User = null;
     const new_user = new User(user_info);
-    this.users_.forEach(function(user) {
+    this.users_.forEach(user => {
       if (user.id() == new_user.id()) {
         user = new_user;
         updated_user = user;
@@ -235,54 +304,6 @@ class RoomPage implements Utils.MessageProcessor {
     return updated_user;
   }
 
-  private RemoveHelp(default_message : string, event : FocusEvent) : void {
-    const element = <Element> event.target;
-    element.classList.remove(RoomPage.kDisabledClass);
-    if (element.textContent == default_message) {
-      element.textContent = "";
-    }
-  }
-
-  private ReturnHelp(default_message : string, event : FocusEvent) : void {
-    const element = <Element> event.target;
-    if (element.textContent.length == 0) {
-      element.classList.add(RoomPage.kDisabledClass);
-      element.textContent = default_message;
-    }
-  }
-
-  private TrySendChatMessage(keydown_event : KeyboardEvent) : void {
-    if (keydown_event.keyCode != 13) {
-      return;
-    }
-    const chat_message = this.chat_input_.textContent;
-    if (chat_message.length > 0) {
-      const parameters = "id=" + this.current_user_.id() +
-          "&data=" + Command.CreateCommand(Command.Type.ChatMessage,
-                                           {message : chat_message});
-      Utils.RunHttpRequest('/user?command=user_message&' + parameters,
-                           this);
-      this.chat_input_.textContent = "";
-    }
-  }
-
-  private AppendChatMessage(user : User, message : string) : void {
-    const message_div = document.createElement('div');
-    message_div.classList.add('message');
-    const user_name_div = document.createElement('div');
-    user_name_div.classList.add('user-name');
-    user_name_div.textContent = user.name();
-    const message_contents_div = document.createElement('div');
-    message_contents_div.classList.add('contents');
-    message_contents_div.textContent = message;
-
-    message_div.appendChild(user_name_div);
-    message_div.appendChild(message_contents_div);
-
-    this.chat_.appendChild(message_div);
-    this.chat_.scrollTop = this.chat_.scrollHeight;
-  }
-
   private SelectRoomUrl() : void {
     const selection = getSelection();
     const room_url_div = document.querySelector('.room-url');
@@ -293,7 +314,7 @@ class RoomPage implements Utils.MessageProcessor {
   }
 
   static MoveToHomePage() : void {
-    document.location.href = RoomPage.kIndexPagePath;
+    /*document.location.href = RoomPage.kIndexPagePath;*/
   }
 }
 

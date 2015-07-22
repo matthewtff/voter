@@ -8,6 +8,8 @@
 #include "user.hh"
 
 namespace koohar {
+class ClientRequest;
+class ClientResponse;
 class Request;
 
 namespace JSON {
@@ -30,16 +32,18 @@ class Room : public CommandsHandler,
   ~Room();
 
   // CommandsHandler::Delegate implementation.
-  bool ShouldHandleRequest(const koohar::Request& request) override;
+  bool ShouldHandleRequest(const koohar::Request& request) final;
 
   // CommandsHandler implementation.
   bool OnRequest(koohar::Request&& request,
-                 koohar::Response&& response) override;
+                 koohar::Response&& response) final;
 
   // User::Delegate implementation.
   bool CheckNameIsUnique(const std::string& name) override;
   void RemoveUser(const std::string& user_id) override;
   void BroadcastMessage(const koohar::JSON::Object& message) override;
+  void MakeRequest(koohar::ClientRequest&& request,
+                   koohar::OutputConnection::Callback callback) override;
 
   const UserList& users() const { return users_; }
   std::string id() const { return id_; }

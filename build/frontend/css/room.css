@@ -112,10 +112,28 @@ header .button {
 
 .open-description {
   float: right;
-  padding-top: 20px;
-  padding-bottom: 20px;
-  width: 10%;
+  height: 40px;
+  width: 40px;
+  background-image: url('/images/arrow.png');
+  background-size: contain;
+  transform: rotate(90deg);
+  margin-top: 5px;
+  margin-bottom: 5px;
+  margin-right: 5px;
 }
+
+.close-description {
+  float: right;
+  height: 40px;
+  width: 40px;
+  background-image: url('/images/arrow.png');
+  background-size: contain;
+  transform: rotate(270deg);
+  margin-top: 5px;
+  margin-bottom: 5px;
+  margin-right: 5px;
+}
+
 
 .task-description {
   padding-left: 15px;

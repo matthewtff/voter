@@ -5,6 +5,7 @@
 /// <reference path="../ui/voting.ts" />
 
 /// <reference path="common.ts" />
+/// <reference path="message_router.ts" />
 /// <reference path="voting.ts" />
 
 module Tasks {
@@ -12,20 +13,14 @@ module Tasks {
     private dispatcher_ : Common.MessageDispatcher;
     private ui_ : UI.TasksList;
     private tasks_ : Task[];
+    private message_router_ : Model.MessageRouter;
 
     constructor(message_dispatcher : Common.MessageDispatcher) {
       this.dispatcher_ = message_dispatcher;
       this.ui_ = new UI.TasksList(this);
       this.tasks_ = [];
-      this.dispatcher_.AddUserMessagesObserver(this.OnUserMessage.bind(this));
-    }
-
-    private DoesTaskExist(task_id : string) {
-      var task_exists = false;
-      this.tasks_.forEach(task => {
-        task_exists = task_exists || task.id() == task_id;
-      });
-      return task_exists;
+      this.message_router_ = this.dispatcher_.GetMessageRouter();
+      this.message_router_.AddUserMessagesObserver(this.OnUserMessage.bind(this));
     }
 
     CreateTask(task_id : string) : Promise<UI.Task> {
@@ -40,7 +35,7 @@ module Tasks {
           const ui_task =
               new UI.Task(task, this.ui_.GetTasksListElement(), issue_details);
           this.tasks_.push(task);
-          this.dispatcher_.SendUserMessage(Command.Type.CreateTask, task_id);
+          this.message_router_.SendUserMessage(Command.Type.CreateTask, task_id);
           return ui_task;
         },
         error_status => Promise.reject(new Error("Could not fetch task")));
@@ -48,17 +43,23 @@ module Tasks {
 
     BroadcastCurrentTasks() : void {
       this.tasks_.forEach(task => {
-        this.dispatcher_.SendUserMessage(Command.Type.CreateTask, task.id());
+        this.message_router_.SendUserMessage(Command.Type.CreateTask, task.id());
         task.BroadcastCurrentVotes();
       });
     }
 
     // private:
-    OnUserMessage(type : Command.Type,
-                  data : string,
-                  user_id : string) : boolean {
-      switch (type) {
-        case Command.Type.CreateTask : this.ui_.AddTask(data);
+    private DoesTaskExist(task_id : string) {
+      var task_exists = false;
+      this.tasks_.forEach(task => {
+        task_exists = task_exists || task.id() == task_id;
+      });
+      return task_exists;
+    }
+
+    private OnUserMessage(message : Model.PackedMessage) : boolean {
+      switch (message.type) {
+        case Command.Type.CreateTask : this.ui_.AddTask(message.data); break;
         default: return false;
       }
       return true;
@@ -80,7 +81,7 @@ module Tasks {
           new Voting.Process(this.dispatcher_, this.task_id_, task_div);
       return this.voting_.ui();
     }
-    
+
     BroadcastCurrentVotes() : void {
       this.voting_.BroadcastCurrentVotes();
     }

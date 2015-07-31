@@ -5,7 +5,7 @@ module Command {
     VoteEstimage,
   }
 
-  export function CreateCommand(command_type : Type, data : Object) : string {
+  export function Create(command_type : Type, data : Object) : string {
     return btoa(JSON.stringify({
       type : command_type,
       data : data

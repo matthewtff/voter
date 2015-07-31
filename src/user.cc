@@ -141,7 +141,6 @@ koohar::JSON::Object User::GetUserInfo() const {
 void User::OnGetTask(const koohar::Request& request) {
   static const char kIssueURL[] = "http://st-api.yandex-team.ru/v2/issues/";
   const std::string task_id = request.Body("task_id");
-  koohar::LOG(koohar::kInfo) << "Requesting task " << task_id << std::endl;
   delegate_->MakeRequest(koohar::ClientRequest(kIssueURL + task_id),
                          std::bind(&User::OnReceiveTaskInfo,
                                    this,

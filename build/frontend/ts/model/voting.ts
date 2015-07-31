@@ -2,39 +2,39 @@
 /// <reference path="../ui/voting.ts" />
 
 /// <reference path="common.ts" />
+/// <reference path="message_router.ts" />
 
 module Voting {
   export class Process implements UI.VotingDelegate {
     private delegate_ : Common.MessageDispatcher;
     private id_ : string;
     private ui_ : UI.Voting;
-    private estimates_ : number[];
+    private message_router_ : Model.MessageRouter;
     private users_estimates_ : UI.UserEstimate[];
     private current_estimate_ : UI.UserEstimate;
 
     constructor(delegate: Common.MessageDispatcher,
                 id: string,
                 tasks: HTMLDivElement) {
+      Utils.Write("Created voting for " + id);
       this.delegate_ = delegate;
       this.id_ = id;
-      this.estimates_ = [1, 2, 3, 4, 5, UI.Estimate.DontKnow];
       this.current_estimate_ = {
         estimate : UI.Estimate.None,
         user_id : this.delegate_.GetCurrentUser().id()
       };
+      this.message_router_ = this.delegate_.GetMessageRouter();
 
       this.ClearUsersEstimates();
       // It's important to initilize |estimates_| __before__ creating new Voting
       // UI, cause it's visiting our |estimates| method in it's constructor.
       this.ui_ = new UI.Voting(this, tasks);
 
-      this.delegate_.AddUserMessagesObserver(this.OnUserMessage.bind(this));
+      this.message_router_.AddUserMessagesObserver(this.OnUserMessage.bind(this));
       this.delegate_.AddUserChangedObserver(this.OnUserAction.bind(this));
     }
 
     ui() : UI.Voting { return this.ui_; }
-
-    estimates() : number[] { return this.estimates_; }
 
     SendEstimate(estimate : number) : void {
       this.current_estimate_.estimate = estimate;
@@ -42,7 +42,7 @@ module Voting {
         task_id : this.id_,
         estimate : estimate,
       };
-      this.delegate_.SendUserMessage(Command.Type.VoteEstimage,
+      this.message_router_.SendUserMessage(Command.Type.VoteEstimage,
                                      JSON.stringify(estimate_data));
       this.ShowUsersEstimates();
     }
@@ -52,23 +52,23 @@ module Voting {
     }
 
     BroadcastCurrentVotes() : void {
+      Utils.Write('Broadcasting current estimate ' + this.current_estimate_.estimate + ' for task ' + this.id_);
       this.SendEstimate(this.current_estimate_.estimate);
     }
 
-    private OnUserMessage(type : Command.Type,
-                          data : string,
-                          user_id : string) : boolean {
-      switch (type) {
+    private OnUserMessage(message : Model.PackedMessage) : boolean {
+      Utils.Write("Received user packed message!!!");
+      switch (message.type) {
         case Command.Type.VoteEstimage: {
-          var estimate_data = JSON.parse(data);
+          Utils.Write("Received user estimate!!!");
+          const estimate_data = JSON.parse(message.data);
           if (estimate_data['task_id'] != this.id_)
             return false;
-          this.OnVoteEstimate(estimate_data['estimate'], user_id);
+          this.OnVoteEstimate(estimate_data['estimate'], message.user_id);
           break;
         }
         default: return false;
       }
-      Utils.Write("[Voting] Received user message!");
       return true;
     }
 
@@ -83,16 +83,11 @@ module Voting {
               user_estimate => user_estimate.user_id != user_id);
           break;
         }
-        case Common.UserAction.AdminSelected: {
-          return;
-        }
       }
       this.ShowUsersEstimates();
     }
 
     private OnVoteEstimate(estimate : number, user_id : string) : void {
-      Utils.Write(
-          '[Voting] Received estimate ' + estimate + ' from ' + user_id);
       this.UpdateUserEstimate({
           user_id : user_id,
           estimate : estimate,
@@ -102,10 +97,9 @@ module Voting {
 
     private ShowUsersEstimates() : void {
       var has_all_votes = this.current_estimate_.estimate != UI.Estimate.None;
-      this.users_estimates_.forEach(estimate => {
-        if (estimate.estimate == UI.Estimate.None)
-          has_all_votes = false;
-      });
+      this.users_estimates_.forEach(estimate =>
+          has_all_votes = has_all_votes && estimate.estimate != UI.Estimate.None
+      );
       this.ui_.ShowUsersEstimates(has_all_votes);
     }
 
@@ -131,10 +125,10 @@ module Voting {
     }
 
     private GetOtherUsers() : User[] {
+      const current_user_id = this.delegate_.GetCurrentUser().id();
       return this.delegate_.GetUsers().filter(
-          user => user.id() != this.delegate_.GetCurrentUser().id());
+          user => user.id() != current_user_id);
     }
-
   }
 
 }

@@ -55,12 +55,12 @@ class IndexPage implements Utils.MessageProcessor {
   OnMessageReceived(message : Object) {
     if (message[Utils.kCommand] == 'room_info') {
       // We schedule move to room to be able to handle other messages, if any.
-      return setTimeout(Room.MoveToRoom, 0, message[Utils.kData]);
+      return setTimeout(Room.MoveToRoom, 0, message[Utils.kData]['room_id']);
     } else if (message[Utils.kCommand] == 'rooms_list') {
       message[Utils.kData].forEach(function (room_info) {
         const room_id = this.room_input_.textContent;
         if (room_id == room_info.room_id) {
-          Room.MoveToRoom({ room_id: room_id });
+          Room.MoveToRoom(room_id);
         }
       }, this);
     }

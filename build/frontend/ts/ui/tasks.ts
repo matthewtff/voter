@@ -82,7 +82,6 @@ module UI {
       task_div.appendChild(header_div);
 
       this.open_description_div_ = Utils.CreateDiv('open-description');
-      this.open_description_div_.textContent = 'V';
       task_div.appendChild(this.open_description_div_);
 
       this.description_div_ = Utils.CreateDiv('task-description');
@@ -106,6 +105,8 @@ module UI {
     }
 
     private ToggleDescription() : void {
+      this.open_description_div_.classList.toggle('open-description');
+      this.open_description_div_.classList.toggle('close-description');
       Utils.ToggleVisibility(this.description_div_);
       this.voting_.ToggleVisibility();
     }

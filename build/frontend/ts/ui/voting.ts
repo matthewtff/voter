@@ -6,6 +6,8 @@ module UI {
     None = -2,
   }
 
+  const all_estimates = [1, 2, 3, 4, 5, UI.Estimate.DontKnow];
+
   export interface UserEstimate {
     user_id : string;
     estimate : number;
@@ -98,7 +100,6 @@ module UI {
   }
 
   export interface VotingDelegate {
-    estimates() : number[];
     SendEstimate(estimate : number) : void;
     GetOtherEstimates() : UserEstimate[];
   }
@@ -141,8 +142,6 @@ module UI {
       this.revealing_ = reveal;
 
       Utils.ClearNode(this.other_votes_);
-      Utils.Write('[UI][Voting] Number of other estimates: ' +
-          this.delegate_.GetOtherEstimates().length);
       this.delegate_.GetOtherEstimates().forEach(user_estimate => {
         new OtherEstimate(this.other_votes_, user_estimate, reveal);
       });
@@ -170,7 +169,7 @@ module UI {
 
     private ShowEstimates() : void {
       const vote_estimates = Utils.CreateDiv('vote-estimates');
-      this.delegate_.estimates().forEach(estimate => {
+      all_estimates.forEach(estimate => {
         const vote_estimate = new VoteEstimate(vote_estimates, estimate);
         vote_estimate.AddObserver(
             this.OnVoteEstimateClicked.bind(this, vote_estimate));

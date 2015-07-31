@@ -13,6 +13,7 @@
       "ts/model/common.ts",
       "ts/model/tasks.ts",
       "ts/model/voting.ts",
+      "ts/model/message_router.ts",
       "ts/room.ts",
       "ts/room_page.ts",
       "ts/typings/es6-promise/es6-promise.d.ts",

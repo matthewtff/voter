@@ -4,7 +4,8 @@
 /// <reference path="common.ts" />
 /// <reference path="message_router.ts" />
 
-module Voting {
+module Model {
+export module Voting {
   export class Process implements UI.VotingDelegate {
     private delegate_ : Common.MessageDispatcher;
     private id_ : string;
@@ -42,7 +43,7 @@ module Voting {
         task_id : this.id_,
         estimate : estimate,
       };
-      this.message_router_.SendUserMessage(Command.Type.VoteEstimage,
+      this.message_router_.SendUserMessage(CommandType.VoteEstimage,
                                      JSON.stringify(estimate_data));
       this.ShowUsersEstimates();
     }
@@ -59,7 +60,7 @@ module Voting {
     private OnUserMessage(message : Model.PackedMessage) : boolean {
       Utils.Write("Received user packed message!!!");
       switch (message.type) {
-        case Command.Type.VoteEstimage: {
+        case CommandType.VoteEstimage: {
           Utils.Write("Received user estimate!!!");
           const estimate_data = JSON.parse(message.data);
           if (estimate_data['task_id'] != this.id_)
@@ -131,4 +132,5 @@ module Voting {
     }
   }
 
+}
 }

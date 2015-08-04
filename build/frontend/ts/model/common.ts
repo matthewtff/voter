@@ -1,7 +1,6 @@
 /// <reference path="../typings/es6-promise/es6-promise.d.ts" />
 
-/// <reference path="../command.ts" />
-
+/// <reference path="command.ts" />
 /// <reference path="message_router.ts" />
 
 module Common {

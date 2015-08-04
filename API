@@ -50,23 +50,16 @@ Room commands:
      [indirect, broadcast : room]:
        "command" : "add_user",
        "data" : UserInfo;
-  - "get_all_users":
-    input: id : string
-    output:
-      "command" : "users_list",
-      "data": List<UserInfo>;
-  - "verify_user":
-    input: id : string
-    output:
-      "command" : "verify_user",
-      "data" : valid : boolean;
-  - "get_task":
-    input:
-      id : string
-      task_id : string
-    output:
-      "command" : "get_task",
-      "data" : JSON.Object
+ - "get_all_users":
+   input: id : string
+   output:
+     "command" : "users_list",
+     "data": List<UserInfo>;
+ - "verify_user":
+   input: id : string
+   output:
+     "command" : "verify_user",
+     "data" : valid : boolean;
 
 User commands:
   dictionary UserInfo {
@@ -82,18 +75,21 @@ User commands:
        "command" : "user_message",
        "user_id" : string,
        "data" : JSON.Object
- - "user_leave":
-   input: id : string
-   output:
-     void
-     [broadcast : room]:
-       "command" : "user_leave",
-       "data": UserInfo
-     [broadcast : room]:
-       "command" : "admin_selected",
-       "data": UserInfo
  - "long_poll":  // Used for long polling.
    input: id : string
    output:
      "command" : "keep_alive",
      "data" : void
+ - "get_task":
+   input:
+     id : string
+     task_id : string
+   output:
+     "command" : "get_task",
+     "data" : JSON.Object
+
+
+ <EVENTS>
+ * [broadcast : room]:
+     "command" : "user_leave",
+     "data": UserInfo

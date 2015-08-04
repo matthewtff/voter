@@ -9,10 +9,8 @@
 namespace {
 
 const char kAddUserCommand[] = "add_user";
-const char kAdminSelectedMessage[] = "admin_selected";
 const char kGetTaskCommand[] = "get_task";
 const char kUserMessageCommand[] = "user_message";
-const char kIsAdministrator[] = "is_administrator";
 const char kLongPollCommand[] = "long_poll";
 const char kKeepAliveCommand[] = "keep_alive";
 const char kUserId[] = "user_id";
@@ -63,18 +61,16 @@ koohar::JSON::Object KeepAliveMessage() {
 
 namespace voter {
 
-User::User(Delegate* delegate, const Role role)
+User::User(Delegate* delegate)
     : CommandsHandler(this),
       delegate_(delegate),
       name_(SelectName()),
       id_(GenerateId()),
-      role_(role),
       connection_gone_since_(std::chrono::steady_clock::now()),
       last_seen_alive_(std::chrono::steady_clock::now()) {
   AddObserver(this);
   AddHandler(kGetTaskCommand, CreateHandler(&User::OnGetTask, this));
   AddHandler(kUserMessageCommand, CreateHandler(&User::OnUserMessage, this));
-  AddHandler(kUserLeaveCommand, CreateHandler(&User::OnUserLeave, this));
   AddHandler(kLongPollCommand, CreateHandler(&User::OnLongPoll, this));
 
   // Notify users about new one.
@@ -104,14 +100,6 @@ void User::OnConnectionGone() {
   connection_gone_since_ = std::chrono::steady_clock::now();
 }
 
-void User::MakeAdmin() {
-  role_ = Role::Admin;
-  koohar::JSON::Object admin_selected;
-  admin_selected[CommandsHandler::kCommandName] = kAdminSelectedMessage;
-  admin_selected[CommandsHandler::kData] = GetUserInfo();
-  delegate_->BroadcastMessage(admin_selected);
-}
-
 bool User::CheckIfUnavailable() {
   if (HasActiveConnection()) {
     const std::chrono::seconds not_seen_for =
@@ -132,7 +120,6 @@ koohar::JSON::Object User::GetUserInfo() const {
   koohar::JSON::Object user_info;
   user_info[kUserId] = id_;
   user_info[kUserName] = name_;
-  user_info[kIsAdministrator] = role_ == Role::Admin;
   return user_info;
 }
 
@@ -167,10 +154,6 @@ void User::OnUserMessage(const koohar::Request& request) {
 
 void User::OnLongPoll(const koohar::Request& /* request */) {
   // Fake intentionally.
-}
-
-void User::OnUserLeave(const koohar::Request& /* request */) {
-  delegate_->RemoveUser(id_);
 }
 
 std::string User::SelectName() {

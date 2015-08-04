@@ -1,11 +1,12 @@
-/// <reference path="../command.ts" />
 /// <reference path="../utils.ts"/>
 /// <reference path="../user.ts"/>
+
+/// <reference path="command.ts" />
 
 module Model {
   export interface PackedMessage {
     data : string,
-    type : Command.Type,
+    type : CommandType,
     user_id : string,
   }
   export class MessageRouter {
@@ -19,7 +20,7 @@ module Model {
       this.queued_messages_ = [];
     }
 
-    SendUserMessage(type : Command.Type, message : string) {
+    SendUserMessage(type : CommandType, message : string) {
       const parameters = "id=" + this.room_page_.GetCurrentUser().id() +
           "&data=" + Command.Create(type, {data : message});
       const url = "/user?command=user_message&" + parameters;
@@ -28,12 +29,13 @@ module Model {
 
     OnUserMessageReceived(sender : User, encoded_command : string) {
       const current_user = this.room_page_.GetCurrentUser();
-      const [type, message_command] = Command.GetCommand(encoded_command);
-      switch (type) {
-        case Command.Type.ChatMessage: {
-          if (message_command['data']) {
+      const command = Command.Parse(encoded_command);
+      const payload_data = command.data();
+      switch (command.type()) {
+        case CommandType.ChatMessage: {
+          if (payload_data) {
             const chat = this.room_page_.GetChat();
-            chat.AddMessage(sender.name(), message_command['data']);
+            chat.AddMessage(sender.name(), payload_data['data']);
           }
           break;
         }
@@ -41,8 +43,8 @@ module Model {
           if (sender.id() == current_user.id())
             return;  // Do not send messages from current user.
           this.queued_messages_.push({
-            data : message_command['data'],
-            type : type,
+            data : payload_data['data'],
+            type : command.type(),
             user_id : sender.id(),
           });
           this.DeliverMessages();

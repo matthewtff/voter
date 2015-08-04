@@ -1,10 +1,10 @@
 /// <reference path="typings/es6-promise/es6-promise.d.ts" />
 
-/// <reference path="command.ts" />
 /// <reference path="room.ts" />
 /// <reference path="utils.ts" />
 /// <reference path="user.ts" />
 
+/// <reference path="model/command.ts" />
 /// <reference path="model/common.ts"/>
 /// <reference path="model/message_router.ts"/>
 /// <reference path="model/tasks.ts" />
@@ -33,7 +33,7 @@ class RoomPage implements Utils.MessageProcessor,
   private message_router_ : Model.MessageRouter;
   private user_action_listeners_ :
       ((action : Common.UserAction, user_id : string) => void)[];
-  private tasks_ : Tasks.TaskList;
+  private tasks_ : Model.Tasks.TaskList;
   private tasks_callbacks_ : TaskCallbacks[];
 
   // UI:
@@ -105,12 +105,12 @@ class RoomPage implements Utils.MessageProcessor,
     this.number_of_broken_requests_ = 0;
     this.user_action_listeners_ = [];
     this.message_router_ = new Model.MessageRouter(this);
-    this.tasks_ = new Tasks.TaskList(this);
+    this.tasks_ = new Model.Tasks.TaskList(this);
     this.tasks_callbacks_ = [];
 
     this.select_link_ = document.querySelector('.select-room-url');
-    this.chat_ = new UI.Chat(
-        this.message_router_.SendUserMessage.bind(this, Command.Type.ChatMessage));
+    this.chat_ = new UI.Chat(this.message_router_.SendUserMessage.bind(
+        this.message_router_, Model.CommandType.ChatMessage));
   }
 
   private RegisterMessageHandlers() {

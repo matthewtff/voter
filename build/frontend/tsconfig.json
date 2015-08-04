@@ -8,8 +8,8 @@
         "sourceMap": true
     },
     "files": [
-      "ts/command.ts",
       "ts/index.ts",
+      "ts/model/command.ts",
       "ts/model/common.ts",
       "ts/model/tasks.ts",
       "ts/model/voting.ts",

@@ -16,21 +16,15 @@ class User : public CommandsHandler,
              public CommandsHandler::Delegate,
              public CommandsHandler::Observer {
  public:
-  enum class Role {
-    Admin,
-    Voter
-  };
-
   class Delegate {
    public:
     virtual bool CheckNameIsUnique(const std::string& name) = 0;
     virtual void BroadcastMessage(const koohar::JSON::Object& message) = 0;
-    virtual void RemoveUser(const std::string& user_id) = 0;
     virtual void MakeRequest(koohar::ClientRequest&&,
                              koohar::OutputConnection::Callback) = 0;
   };
 
-  User(Delegate* delegate, const Role role);
+  User(Delegate* delegate);
   ~User();
 
   // CommandsHandler::Delegate implementation.
@@ -41,9 +35,6 @@ class User : public CommandsHandler,
 
   std::string name() const { return name_; }
   std::string id() const { return id_; }
-  Role role() const { return role_; }
-
-  void MakeAdmin();
 
   bool CheckIfUnavailable();
   koohar::JSON::Object GetUserInfo() const;
@@ -53,7 +44,6 @@ class User : public CommandsHandler,
   void OnGetTask(const koohar::Request& request);
   void OnUserMessage(const koohar::Request& request);
   void OnLongPoll(const koohar::Request& request);
-  void OnUserLeave(const koohar::Request& /* request */);
 
   void OnReceiveTaskInfo(koohar::ClientRequest&& /* request */,
                          koohar::ClientResponse&& response);
@@ -63,7 +53,6 @@ class User : public CommandsHandler,
   Delegate* delegate_;
   const std::string name_;
   const std::string id_;
-  Role role_;
   std::chrono::steady_clock::time_point connection_gone_since_;
   std::chrono::steady_clock::time_point last_seen_alive_;
 };  // class User

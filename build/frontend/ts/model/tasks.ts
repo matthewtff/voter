@@ -1,14 +1,15 @@
 /// <reference path="../utils.ts" />
-/// <reference path="../command.ts" />
 
 /// <reference path="../ui/tasks.ts" />
 /// <reference path="../ui/voting.ts" />
 
+/// <reference path="command.ts" />
 /// <reference path="common.ts" />
 /// <reference path="message_router.ts" />
 /// <reference path="voting.ts" />
 
-module Tasks {
+module Model {
+export module Tasks {
   export class TaskList implements UI.TasksListDelegate {
     private dispatcher_ : Common.MessageDispatcher;
     private ui_ : UI.TasksList;
@@ -35,7 +36,7 @@ module Tasks {
           const ui_task =
               new UI.Task(task, this.ui_.GetTasksListElement(), issue_details);
           this.tasks_.push(task);
-          this.message_router_.SendUserMessage(Command.Type.CreateTask, task_id);
+          this.message_router_.SendUserMessage(CommandType.CreateTask, task_id);
           return ui_task;
         },
         error_status => Promise.reject(new Error("Could not fetch task")));
@@ -43,7 +44,7 @@ module Tasks {
 
     BroadcastCurrentTasks() : void {
       this.tasks_.forEach(task => {
-        this.message_router_.SendUserMessage(Command.Type.CreateTask, task.id());
+        this.message_router_.SendUserMessage(CommandType.CreateTask, task.id());
         task.BroadcastCurrentVotes();
       });
     }
@@ -59,7 +60,7 @@ module Tasks {
 
     private OnUserMessage(message : Model.PackedMessage) : boolean {
       switch (message.type) {
-        case Command.Type.CreateTask : this.ui_.AddTask(message.data); break;
+        case CommandType.CreateTask : this.ui_.AddTask(message.data); break;
         default: return false;
       }
       return true;
@@ -89,4 +90,5 @@ module Tasks {
     id() : string { return this.task_id_; }
   }
 
+}
 }
